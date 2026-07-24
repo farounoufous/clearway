@@ -1,5 +1,6 @@
 {
   "deploy": {
-    "startCommand": "php -S 0.0.0.0:$PORT"
+    "startCommand": "php -d auto_prepend_file=fpm-env.php -S 0.0.0.0:$PORT"
   }
 }
+

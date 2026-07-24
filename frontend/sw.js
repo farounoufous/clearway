@@ -59,31 +59,40 @@ self.addEventListener('activate', (evenement) => {
   );
   self.clients.claim();
 });
-
 // ---- Interception des requêtes ----
 self.addEventListener('fetch', (evenement) => {
   const requete = evenement.request;
 
-  // On ne touche jamais aux requêtes d'écriture (POST/DELETE) : un signalement
-  // ou une confirmation doit toujours partir sur le vrai réseau, jamais depuis un cache
+  // SÉCURITÉ : On ignore complètement les requêtes générées par les extensions Chrome
+  if (requete.url.startsWith('chrome-extension://')) return;
+
+  // On ne touche jamais aux requêtes d'écriture (POST/DELETE)
   if (requete.method !== 'GET') return;
 
   const url = new URL(requete.url);
 
-  // Appels à l'API backend (données) : réseau en priorité, cache en secours si hors ligne
-  if (url.pathname.includes('/backend/api/')) {
+  // Correction de la détection : on vérifie si l'URL contient '/api/' (valable pour Railway ET l'ancien système)
+  if (url.pathname.includes('/api/') || url.hostname.includes('railway.app')) {
     evenement.respondWith(
       fetch(requete)
         .then((reponse) => {
+          // Si la réponse réseau échoue (ex: erreur CORS ou 500), on ne la met pas en cache
+          if (!reponse || reponse.status !== 200 || reponse.type === 'opaque') {
+            return reponse;
+          }
           const copie = reponse.clone();
-          caches.open(CACHE_DONNEES).then((cache) => cache.put(requete, copie));
+          caches.open(CACHE_DONNEES).then((cache) => {
+            // Sécurité pour éviter de planter si l'URL n'est pas http/https
+            if (requete.url.startsWith('http')) {
+              cache.put(requete, copie);
+            }
+          });
           return reponse;
         })
         .catch(async () => {
           const reponseCache = await caches.match(requete);
           if (reponseCache) return reponseCache;
-          // Aucune donnée en cache (première visite hors ligne) : réponse de secours
-          // cohérente avec le format JSON attendu par le frontend
+          
           return new Response(
             JSON.stringify({ erreur: 'Tu es hors ligne et aucune donnée locale n\'est disponible pour le moment.' }),
             { status: 503, headers: { 'Content-Type': 'application/json' } }
@@ -92,6 +101,7 @@ self.addEventListener('fetch', (evenement) => {
     );
     return;
   }
+
 
   // Fichiers de l'app (HTML/CSS/JS/images) : cache en priorité (rapide),
   // avec mise à jour silencieuse en arrière-plan pour la prochaine visite
