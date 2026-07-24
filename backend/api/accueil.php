@@ -1,4 +1,12 @@
 <?php
+
+// Lignes temporaires pour afficher l'erreur en clair sur l'écran
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+// (Le reste de vos en-têtes CORS et require_once db.php reste inchangé...)
+
 header("Access-Control-Allow-Origin: https://clearway-phi.vercel.app"); // ⚠️ REMPLACEZ par votre vraie URL Vercel
 header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
 header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE");
