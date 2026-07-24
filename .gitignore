@@ -1,0 +1,19 @@
+# ============================================
+# ClearWay Bénin - Fichiers à ne jamais versionner
+# ============================================
+
+# Configuration contenant des identifiants réels (mot de passe base de données, clés VAPID)
+backend/config/db.php
+backend/config/vapid.php
+
+# Photos uploadées par les utilisateurs (données runtime, pas du code)
+backend/uploads/*
+!backend/uploads/.htaccess
+!backend/uploads/.gitkeep
+
+# Système / éditeurs
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ClearWay Bénin</title>
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" href="icone-32.png" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="icone-180.png">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f3460">
+<link rel="stylesheet" href="css/style.css">
+<script src="js/theme.js"></script>
+</head>
+<body>
+
+<div class="ecran">
+  <div class="header header-accueil">
+    <button type="button" id="btn-menu" class="btn-cloche btn-menu" aria-label="Ouvrir le menu">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="3" y1="6" x2="21" y2="6"></line>
+        <line x1="3" y1="12" x2="21" y2="12"></line>
+        <line x1="3" y1="18" x2="21" y2="18"></line>
+      </svg>
+    </button>
+
+    <button type="button" id="btn-cloche" class="btn-cloche" aria-label="Voir les notifications">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path>
+        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+      </svg>
+      <span class="point-actif" id="point-actif-cloche" hidden></span>
+      <span class="badge-compteur-cloche" id="badge-notifications-cloche" hidden></span>
+    </button>
+
+    <div class="header-titre-groupe">
+      <img src="logo-header.svg" alt="" class="logo-header" aria-hidden="true">
+      <div>
+        <h1>ClearWay Bénin</h1>
+        <p>Sachez avant de partir</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="contenu">
+
+    <div class="stats">
+      <div class="stat-carte rouge">
+        <span class="chiffre" id="nb-bloquees">–</span>
+        <span class="libelle">voies bloquées</span>
+      </div>
+      <div class="stat-carte vert">
+        <span class="chiffre" id="nb-actifs">–</span>
+        <span class="libelle">signalements actifs</span>
+      </div>
+    </div>
+
+    <div class="section-derniers">
+      <h2 class="titre-section">Derniers signalements</h2>
+      <div class="liste-signalements" id="liste-signalements">
+        <div class="squelette-carte"></div>
+        <div class="squelette-carte"></div>
+        <div class="squelette-carte"></div>
+      </div>
+    </div>
+
+    <a href="signalement.html" class="btn btn-principal">Signaler une voie bloquée</a>
+    <a href="voies.html" class="btn btn-secondaire">Voir toutes les voies</a>
+
+  </div>
+</div>
+
+<!-- Panneau déroulant des notifications (ouvert au clic sur la cloche) -->
+<div id="panneau-notifications" class="panneau-notifications" hidden>
+  <div class="panneau-notifications-tete">
+    <span>Notifications</span>
+    <button type="button" id="btn-fermer-panneau" aria-label="Fermer">&times;</button>
+  </div>
+  <div id="liste-notifications" class="panneau-notifications-liste">
+    <p class="etat-vide">Aucune notification pour le moment.</p>
+  </div>
+  <div class="panneau-notifications-pied">
+    <button type="button" id="btn-toggle-push" class="lien-discret"><span class="icone-inline"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></span>Activer les alertes push sur cet appareil</button>
+  </div>
+</div>
+
+<!-- Modal d'activation/désactivation des notifications push -->
+<div id="modal-notif-overlay" class="modal-overlay" hidden>
+  <div class="modal-notif">
+    <div class="modal-notif-icone">
+      <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path>
+        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+      </svg>
+    </div>
+    <h2 id="modal-notif-titre">Recevoir les alertes ?</h2>
+    <p id="modal-notif-texte">Sois prévenu dès qu'une voie est bloquée près de chez toi - même sans ouvrir l'app.</p>
+    <button type="button" id="modal-notif-action-principale" class="btn btn-principal">Activer les notifications</button>
+    <button type="button" id="modal-notif-action-secondaire" class="btn btn-secondaire">Plus tard</button>
+  </div>
+</div>
+
+<!-- Panneau déroulant du menu (ouvert au clic sur le hamburger) -->
+<nav id="menu-lateral" class="panneau-menu" hidden>
+  <div class="panneau-menu-tete">
+    <img src="logo-header.svg" alt="">
+    <span>ClearWay Bénin</span>
+    <button type="button" id="btn-fermer-menu" aria-label="Fermer le menu">&times;</button>
+  </div>
+  <div class="panneau-menu-liste">
+    <a href="voies.html" class="panneau-menu-item">
+      <span class="icone-menu"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></span>
+      Voies bloquées
+    </a>
+    <a href="recemment-degage.html" class="panneau-menu-item">
+      <span class="icone-menu"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg></span>
+      Récemment dégagées
+    </a>
+   
+    <a href="mes-signalements.html" class="panneau-menu-item">
+      <span class="icone-menu"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><line x1="9" y1="12" x2="15" y2="12"></line><line x1="9" y1="16" x2="15" y2="16"></line></svg></span>
+      Mes signalements
+    </a>
+    <a href="signalement.html" class="panneau-menu-item">
+      <span class="icone-menu"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg></span>
+      Signaler une voie
+    </a>
+  </div>
+  <button type="button" id="btn-theme" class="panneau-menu-toggle" aria-pressed="false">
+    <span class="icone-menu"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"></path></svg></span>
+    <span class="libelle">Mode clair</span>
+    <span class="interrupteur"></span>
+  </button>
+</nav>
+
+<script src="js/sw-register.js"></script>
+<script src="js/notifications-locales.js"></script>
+<script src="js/menu.js"></script>
+<script src="js/app.js"></script>
+<script src="js/notifications.js"></script>
+</body>
+</html>

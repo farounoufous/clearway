@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nouveau signalement — ClearWay Bénin</title>
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" href="icone-32.png" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="icone-180.png">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f3460">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<script src="js/theme.js"></script>
+</head>
+<body>
+
+<div class="ecran">
+  <div class="header header-nav">
+    <a href="index.html" aria-label="Retour">&#8592;</a>
+    <h1>Nouveau signalement</h1>
+  </div>
+
+  <div class="contenu">
+
+    <div id="message-zone"></div>
+
+    <form id="form-signalement">
+
+      <p class="legende-champs-requis"><span class="requis">*</span> Champ obligatoire</p>
+
+      <div class="champ">
+        <label>Emplacement de l'obstacle <span class="requis">*</span></label>
+
+        <div id="position-confirmee" class="zone-detectee" hidden>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+          <span class="zone-detectee-texte" id="position-confirmee-texte"></span>
+          <a href="#" id="lien-maps-position" target="_blank" rel="noopener">Voir sur Maps</a>
+          <button type="button" id="btn-modifier-position">Modifier</button>
+        </div>
+
+        <div class="boutons-position" id="boutons-position">
+          <button type="button" id="btn-geolocalisation" class="btn btn-secondaire">
+            <span class="icone-inline"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z"></path><circle cx="12" cy="10" r="3"></circle></svg></span>Utiliser ma position
+          </button>
+          <button type="button" id="btn-choisir-carte" class="btn btn-secondaire">
+            <span class="icone-inline"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon><line x1="8" y1="2" x2="8" y2="18"></line><line x1="16" y1="6" x2="16" y2="22"></line></svg></span>Choisir sur la carte
+          </button>
+        </div>
+
+        <p class="note-info">Ta position sera visible par les autres utilisateurs pour les aider à repérer l'obstacle précisément.</p>
+        <p class="note-info" id="statut-geolocalisation" hidden></p>
+
+        <div class="champ champ-conditionnel" id="bloc-quartier-manuel" hidden>
+          <label for="quartier-manuel">Quartier (non détecté automatiquement)</label>
+          <input type="text" id="quartier-manuel" placeholder="Précise ton quartier">
+        </div>
+
+        <input type="hidden" id="champ-latitude" name="latitude">
+        <input type="hidden" id="champ-longitude" name="longitude">
+        <input type="hidden" id="champ-accuracy" name="accuracy">
+        <input type="hidden" id="champ-source-position" name="source_position">
+        <input type="hidden" id="champ-pays" name="pays">
+        <input type="hidden" id="champ-ville" name="ville">
+        <input type="hidden" id="champ-quartier" name="quartier">
+        <input type="hidden" id="champ-adresse-formatee" name="adresse_formatee">
+      </div>
+
+      <div class="champ">
+        <label for="type-obstacle">Type d'obstacle <span class="requis">*</span></label>
+        <select id="type-obstacle" name="type_obstacle" required>
+          <option value="" selected disabled>Type d'obstacle</option>
+          <option value="Inondation">Inondation</option>
+          <option value="Accident">Accident</option>
+          <option value="Travaux">Travaux</option>
+          <option value="Autre">Autre (préciser)</option>
+        </select>
+        <input type="text" id="type-obstacle-personnalise" name="type_obstacle_personnalise" class="champ-conditionnel" placeholder="Précise le type d'obstacle" hidden>
+      </div>
+
+      <div class="champ">
+        <label>Séverité</label>
+        <div class="selecteur-gravite" id="selecteur-gravite">
+          <button type="button" data-valeur="Leger">Léger</button>
+          <button type="button" data-valeur="Modere" class="actif">Modéré</button>
+          <button type="button" data-valeur="Severe">Sévère</button>
+        </div>
+        <input type="hidden" id="gravite" name="gravite" value="Modere">
+      </div>
+
+      <div class="champ">
+        <label for="description">Description <span class="requis">*</span></label>
+        <textarea id="description" name="description" placeholder="Décris brièvement la situation..." required></textarea>
+      </div>
+
+      <div class="champ">
+        <label for="photo">Photo du dégât <span class="requis">*</span></label>
+        <input type="file" id="photo" name="photo" accept="image/jpeg,image/png,image/webp" required>
+        <div id="apercu-photo"></div>
+      </div>
+
+      <button type="submit" class="btn btn-principal" id="btn-envoyer">Envoyer le signalement</button>
+
+    </form>
+
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-carte" hidden>
+  <div class="modal-carte">
+    <div class="modal-carte-entete">
+      <h2>Choisir un emplacement</h2>
+      <button type="button" id="btn-fermer-carte" aria-label="Fermer" class="btn-fermer-carte">&times;</button>
+    </div>
+
+    <input type="text" id="recherche-lieu" placeholder="Rechercher un lieu (quartier, rue...)" autocomplete="off">
+    <div id="resultats-recherche-lieu" class="resultats-recherche-lieu" hidden></div>
+
+    <div id="carte-leaflet"></div>
+
+    <p class="note-info" id="statut-carte">Déplace la carte ou le marqueur, ou recherche un lieu ci-dessus.</p>
+
+    <button type="button" class="btn btn-principal" id="btn-confirmer-carte" disabled>Confirmer la position</button>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="js/sw-register.js"></script>
+<script src="js/signalement.js"></script>
+</body>
+</html>

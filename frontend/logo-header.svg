@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 260" width="240" height="260">
+  <!-- Signal / ondes d'alerte -->
+  <g fill="none" stroke="#f57c00" stroke-linecap="round">
+    <path d="M 68 62 A 52 52 0 0 1 172 62" stroke-width="13"/>
+    <path d="M 84 62 A 36 36 0 0 1 156 62" stroke-width="13"/>
+    <path d="M 100 62 A 20 20 0 0 1 140 62" stroke-width="13"/>
+  </g>
+  <!-- Pin en blanc, lisible sur fond bleu foncé -->
+  <path d="M120 60 C81.3 60 50 91.3 50 130 c0 52.5 70 130 70 130 s70-77.5 70-130 c0-38.7-31.3-70-70-70 z"
+        fill="#ffffff"/>
+</svg>

@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 320" width="240" height="320">
+  <!-- Signal / ondes d'alerte au-dessus du pin -->
+  <g fill="none" stroke="#f57c00" stroke-linecap="round">
+    <path d="M 68 62 A 52 52 0 0 1 172 62" stroke-width="12"/>
+    <path d="M 84 62 A 36 36 0 0 1 156 62" stroke-width="12"/>
+    <path d="M 100 62 A 20 20 0 0 1 140 62" stroke-width="12"/>
+  </g>
+
+  <!-- Pin de localisation -->
+  <path d="M120 60 C81.3 60 50 91.3 50 130 c0 52.5 70 130 70 130 s70-77.5 70-130 c0-38.7-31.3-70-70-70 z"
+        fill="#0f3460"/>
+
+  <!-- Route en perspective à l'intérieur du pin -->
+  <path d="M92 232 L120 128 L148 232" fill="none" stroke="#ffffff" stroke-width="11"
+        stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="120" y1="142" x2="120" y2="222" stroke="#f57c00" stroke-width="7"
+        stroke-dasharray="16 14" stroke-linecap="round"/>
+</svg>

@@ -1,0 +1,5 @@
+# Empêche l'exécution de scripts PHP dans le dossier uploads (sécurité)
+# Si un fichier malveillant déguisé en image est uploadé, il ne pourra jamais s'exécuter
+<FilesMatch "\.(php|phtml|php3|php4|php5|phar)$">
+    Require all denied
+</FilesMatch>

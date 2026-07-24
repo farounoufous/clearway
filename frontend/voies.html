@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Voies impraticables - ClearWay Bénin</title>
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" href="icone-32.png" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="icone-180.png">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f3460">
+<link rel="stylesheet" href="css/style.css">
+<script src="js/theme.js"></script>
+</head>
+<body>
+
+<div class="ecran">
+  <div class="header header-nav">
+    <a href="index.html" aria-label="Retour">&#8592;</a>
+    <h1>Voies impraticables</h1>
+  </div>
+
+  <div class="contenu">
+    <div class="champ-recherche">
+      <input type="search" id="recherche-zone" placeholder="Rechercher une zone (ex : Godomey)" aria-label="Rechercher une zone">
+    </div>
+    <div id="liste-voies">
+      <div class="squelette-carte"></div>
+      <div class="squelette-carte"></div>
+      <div class="squelette-carte"></div>
+    </div>
+    <a href="mes-signalements.html" class="lien-discret"><span class="icone-inline"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><line x1="9" y1="12" x2="15" y2="12"></line><line x1="9" y1="16" x2="15" y2="16"></line></svg></span>Mes signalements</a>
+  </div>
+</div>
+
+<script src="js/sw-register.js"></script>
+<script src="js/voies.js"></script>
+</body>
+</html>
