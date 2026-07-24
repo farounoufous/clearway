@@ -2,7 +2,8 @@
 // ClearWay Bénin - Cloche : panneau de notifications + notifications push
 // ============================================
 
-window.API_BASE = window.API_BASE || '../backend/api';
+window.API_BASE = window.API_BASE || 'https://clearway-production-6e27.up.railway.app/api';
+
 const VAPID_CLE_PUBLIQUE = 'BNR9zjMkuQjAYjtDMbCes8M5_VH0Dx9qRCUlkYLc7KfbKiwWzc2Re_Avs4bfJDjjc-qk8KgQFViVIhyjeq8vFtY';
 
 const btnCloche = document.getElementById('btn-cloche');

@@ -1,4 +1,14 @@
 <?php
+header("Access-Control-Allow-Origin: https://clearway-production-6e27.up.railway.app"); // ⚠️ REMPLACEZ par votre vraie URL Vercel
+header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
+header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE");
+header("Access-Control-Allow-Credentials: true");
+
+// Si c'est une requête de pré-vérification (OPTIONS), on arrête le script immédiatement
+if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+    exit(0);
+}
+
 // ============================================
 // ClearWay Bénin - API Accueil
 // Retourne : stats (voies bloquées / signalements actifs) + 3 derniers signalements
@@ -6,6 +16,8 @@
 
 header('Content-Type: application/json; charset=utf-8');
 require_once __DIR__ . '/../config/db.php';
+
+
 
 // Nombre de voies bloquées = signalements actifs, gravité sévère ou modérée (hors "Praticable")
 $nbBloquees = $pdo->query(

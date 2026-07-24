@@ -4,7 +4,8 @@
 
 // Déclaré via window pour rester cohérent avec les autres pages et éviter
 // tout conflit si un autre script venait à être ajouté sur cette page
-window.API_BASE = window.API_BASE || '../backend/api';
+window.API_BASE = window.API_BASE || 'https://clearway-production-6e27.up.railway.app/api';
+
 
 // Même clé que sur l'accueil : un signalement vu sur un écran
 // ne réaffichera plus son badge "Nouveau" nulle part dans l'app

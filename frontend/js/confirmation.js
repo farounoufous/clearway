@@ -1,6 +1,4 @@
-
-
-window.API_BASE = window.API_BASE || '../backend/api';
+window.API_BASE = window.API_BASE || 'https://clearway-production-6e27.up.railway.app/api';
 
 const params = new URLSearchParams(window.location.search);
 const signalementId = params.get('id');

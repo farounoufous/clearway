@@ -5,7 +5,7 @@
 // et servent ici à retrouver leur détail auprès du backend.
 // ============================================
 
-window.API_BASE = window.API_BASE || '../backend/api';
+window.API_BASE = window.API_BASE || 'https://clearway-production-6e27.up.railway.app/api';
 
 const CLE_MES_SIGNALEMENTS = 'clearway_mes_signalements';
 
