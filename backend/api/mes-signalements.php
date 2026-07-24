@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 // ============================================
 
 header('Content-Type: application/json; charset=utf-8');
-require_once __DIR__ . '/../config/db.php';
+require_once dirname(__DIR__) . '/config/db.php';
 
 $idsBruts = $_GET['ids'] ?? '';
 $ids = array_values(array_unique(array_filter(array_map('intval', explode(',', $idsBruts)))));

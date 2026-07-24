@@ -17,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 // ============================================
 
 header('Content-Type: application/json; charset=utf-8');
-require_once __DIR__ . '/../config/db.php';
+require_once dirname(__DIR__) . '/config/db.php';
 
 $sql = "
     SELECT s.id, s.type_obstacle, s.gravite, s.date_archivage,
