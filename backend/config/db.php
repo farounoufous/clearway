@@ -24,41 +24,38 @@ function ouvrirConnexion($host, $nom, $utilisateur, $motDePasse, $port = 3306) {
 }
 
 $pdo = null;
-
 try {
     // ---- Essai 1 : local XAMPP ----
     $pdo = ouvrirConnexion('localhost', 'clearway_benin', 'root', '');
 } catch (\Throwable $e) {
     try {
-        // ---- Essai 2 : Production Railway ----
-        // Si les variables d'environnement Railway n'existent pas, on passe directement à la suite
-        if (!isset($_ENV['MYSQLHOST'])) {
-            throw new \Exception("Pas sur Railway");
+        // ---- Essai 2 : Production Railway (Optimisé Vercel via getenv) ----
+        $host = getenv('MYSQLHOST');
+        
+        if (!$host) {
+            throw new \Exception("Les variables d'environnement Railway ne sont pas détectées sur Vercel.");
         }
+        
         $pdo = ouvrirConnexion(
-            $_ENV['MYSQLHOST'],
-            $_ENV['MYSQLDATABASE'],
-            $_ENV['MYSQLUSER'],
-            $_ENV['MYSQLPASSWORD'],
-            $_ENV['MYSQLPORT']
+            $host,
+            getenv('MYSQLDATABASE'),
+            getenv('MYSQLUSER'),
+            getenv('MYSQLPASSWORD'),
+            getenv('MYSQLPORT') ?: 3306
         );
     } catch (\Throwable $e_railway) {
-        try {
-            // ---- Essai 3 : InfinityFree ----
-            $pdo = ouvrirConnexion('://infinityfree.com', 'if0_42431837_clearway', 'if0_42431837', 'UXtJ73Re9d');
-        } catch (\Throwable $e2) {
-            // En cas d'échec total, on renvoie une erreur JSON propre au lieu d'un crash 500 HTML
-            http_response_code(200); // On force un code 200 pour que le CORS passe et que l'erreur s'affiche en clair
-            header('Content-Type: application/json; charset=utf-8');
-            die(json_encode([
-                'nb_bloquees' => 0,
-                'nb_actifs' => 0,
-                'derniers_signalements' => [],
-                'erreur_base' => 'Impossible de se connecter aux bases de données : ' . $e2->getMessage()
-            ]));
-        }
+        // En cas d'échec total (local et production), on renvoie l'erreur en JSON propre
+        http_response_code(200); 
+        header('Content-Type: application/json; charset=utf-8');
+        die(json_encode([
+            'nb_bloquees' => 0,
+            'nb_actifs' => 0,
+            'derniers_signalements' => [],
+            'erreur_base' => 'Impossible de se connecter à la base Railway : ' . $e_railway->getMessage()
+        ]));
     }
 }
+
 
 
 // Aligne aussi l'horloge MySQL sur le Bénin (GMT+1)
