@@ -1,3 +1,6 @@
+
+
+
 // ============================================
 // ClearWay Bénin - Écran Carte des zones (Leaflet)
 // Affiche les voies bloquées (rouge), ralenties (orange) et récemment
@@ -229,3 +232,20 @@ document.addEventListener('DOMContentLoaded', () => {
   chargerMarqueurs();
   setInterval(chargerMarqueurs, 30000);
 });
+
+// ---- Recalcule la taille de la carte quand le conteneur change réellement
+// de dimensions (rotation d'écran, redimensionnement de fenêtre, barre
+// d'adresse mobile qui apparaît/disparaît). Nécessaire car Leaflet calcule
+// la taille de ses tuiles une seule fois à l'initialisation. ----
+let delaiRedimensionnement;
+function planifierInvalidateSize() {
+  clearTimeout(delaiRedimensionnement);
+  delaiRedimensionnement = setTimeout(() => carte.invalidateSize(), 150);
+}
+
+window.addEventListener('resize', planifierInvalidateSize);
+window.addEventListener('orientationchange', planifierInvalidateSize);
+
+// Sécurité supplémentaire : certains navigateurs mobiles ajustent la barre
+// d'adresse juste après le chargement, une fois la carte déjà initialisée
+window.addEventListener('load', planifierInvalidateSize);
