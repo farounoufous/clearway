@@ -1,3 +1,6 @@
+
+
+
 <?php
 header("Access-Control-Allow-Origin: https://clearway-phi.vercel.app"); // ⚠️ REMPLACEZ par votre vraie URL Vercel
 header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
@@ -71,6 +74,8 @@ $resultats = array_map(function ($s) {
         'gravite_label' => graviteLabel($s['gravite']),
         'nb_degagees' => (int) $s['nb_degagees'],
         'il_y_a' => ilYA($s['date_archivage']),
+        'latitude' => $s['latitude'] !== null ? (float) $s['latitude'] : null,
+        'longitude' => $s['longitude'] !== null ? (float) $s['longitude'] : null,
     ];
 }, $rows);
 

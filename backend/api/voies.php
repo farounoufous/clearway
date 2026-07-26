@@ -1,3 +1,7 @@
+
+
+
+
 <?php
 
 header("Access-Control-Allow-Origin: https://clearway-phi.vercel.app"); // ⚠️ REMPLACEZ par votre vraie URL Vercel
@@ -78,6 +82,17 @@ function graviteLabel($gravite) {
     };
 }
 
+// Temps écoulé depuis la création, format court utilisé sur la carte
+// (ex : "20 min", "1h30") — cf. pop-up des marqueurs
+function dureeEcoulee($date) {
+    $minutes = max(0, floor((time() - strtotime($date)) / 60));
+    if ($minutes < 1) return "à l'instant";
+    if ($minutes < 60) return $minutes . ' min';
+    $heures = floor($minutes / 60);
+    $reste = $minutes % 60;
+    return $heures . 'h' . str_pad($reste, 2, '0', STR_PAD_LEFT);
+}
+
 $voies = array_map(function ($s) {
     $estValide = (bool) $s['valide'];
     $base = $s['derniere_confirmation'] ?? $s['date_creation'];
@@ -95,6 +110,9 @@ $voies = array_map(function ($s) {
         'gravite_classe' => graviteClasse($s['gravite']),
         'gravite_label' => graviteLabel($s['gravite']),
         'type_obstacle' => $s['type_obstacle'],
+        'latitude' => $s['latitude'] !== null ? (float) $s['latitude'] : null,
+        'longitude' => $s['longitude'] !== null ? (float) $s['longitude'] : null,
+        'depuis' => dureeEcoulee($s['date_creation']),
         'valide' => $estValide,
         'nb_confirmations' => (int) $s['nb_confirmations'],
         'nb_degagees' => (int) $s['nb_degagees'],
