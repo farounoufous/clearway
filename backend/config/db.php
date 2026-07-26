@@ -25,26 +25,24 @@ function ouvrirConnexion($host, $nom, $utilisateur, $motDePasse, $port = 3306) {
 
 $pdo = null;
 try {
-    // ---- Essai 1 : local XAMPP ----
+    // ---- Essai 1 : Votre environnement local XAMPP ----
     $pdo = ouvrirConnexion('localhost', 'clearway_benin', 'root', '');
 } catch (\Throwable $e) {
     try {
-        // ---- Essai 2 : Production Railway (Optimisé Vercel via getenv) ----
-        $host = getenv('MYSQLHOST');
+        // ---- Essai 2 : Production via les variables existantes ----
+        $host = getenv('RAILWAY_PUBLIC_DOMAIN');
+        $database = getenv('RAILWAY_PROJECT_NAME');
+        $user = 'root'; // Utilisateur par défaut de Railway
+        $password = 'zRNupuCprSSUXMjLaHlWeqiGGdCIrSuW'; // Votre mot de passe secret
+        $port = 3306;
         
         if (!$host) {
-            throw new \Exception("Les variables d'environnement Railway ne sont pas détectées sur Vercel.");
+            throw new \Exception("La variable RAILWAY_PUBLIC_DOMAIN est introuvable sur Vercel.");
         }
         
-        $pdo = ouvrirConnexion(
-            $host,
-            getenv('MYSQLDATABASE'),
-            getenv('MYSQLUSER'),
-            getenv('MYSQLPASSWORD'),
-            getenv('MYSQLPORT') ?: 3306
-        );
+        $pdo = ouvrirConnexion($host, $database, $user, $password, $port);
+        
     } catch (\Throwable $e_railway) {
-        // En cas d'échec total (local et production), on renvoie l'erreur en JSON propre
         http_response_code(200); 
         header('Content-Type: application/json; charset=utf-8');
         die(json_encode([
@@ -55,6 +53,8 @@ try {
         ]));
     }
 }
+
+    
 
 
 
