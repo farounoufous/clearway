@@ -29,13 +29,13 @@ try {
     $pdo = ouvrirConnexion('localhost', 'clearway_benin', 'root', '');
 } catch (\Throwable $e) {
     try {
-        // ---- Essai 2 : Production Railway (Optimisé Vercel via getenv) ----
+        // ---- Essai 2 : Production Railway ----
         $host = getenv('MYSQLHOST');
-        
+
         if (!$host) {
-            throw new \Exception("Les variables d'environnement Railway ne sont pas détectées sur Vercel.");
+            throw new \Exception("Les variables d'environnement Railway (MYSQLHOST, etc.) ne sont pas détectées.");
         }
-        
+
         $pdo = ouvrirConnexion(
             $host,
             getenv('MYSQLDATABASE'),
@@ -44,19 +44,22 @@ try {
             getenv('MYSQLPORT') ?: 3306
         );
     } catch (\Throwable $e_railway) {
-        // En cas d'échec total (local et production), on renvoie l'erreur en JSON propre
-        http_response_code(200); 
+        // En cas d'échec total (local et production), on renvoie une erreur JSON propre
+        // avec un VRAI code d'erreur HTTP (500) : les en-têtes CORS sont déjà envoyés
+        // plus haut et fonctionnent avec n'importe quel code de statut. Un 200 ici ferait
+        // croire au frontend que la requête a réussi alors qu'aucune donnée n'a été lue/écrite.
+        http_response_code(500);
         header('Content-Type: application/json; charset=utf-8');
         die(json_encode([
+            'succes' => false,
             'nb_bloquees' => 0,
             'nb_actifs' => 0,
             'derniers_signalements' => [],
+            'erreur' => 'Impossible de se connecter à la base Railway : ' . $e_railway->getMessage(),
             'erreur_base' => 'Impossible de se connecter à la base Railway : ' . $e_railway->getMessage()
         ]));
     }
 }
-
-
 
 // Aligne aussi l'horloge MySQL sur le Bénin (GMT+1)
 try {
@@ -66,32 +69,8 @@ try {
 }
 
 // ============================================
-// Auto-réparation du schéma (Le reste de votre code d'origine)
+// Auto-réparation du schéma
 // ============================================
- try {
-    $colonneExiste = $pdo->query("SHOW COLUMNS FROM signalements LIKE 'zone_id'")->fetch();
-    if ($colonneExiste) {
-        $contrainte = $pdo->query("
-            SELECT CONSTRAINT_NAME FROM information_schema.KEY_COLUMN_USAGE
-            WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'signalements'
-              AND COLUMN_NAME = 'zone_id' AND REFERENCED_TABLE_NAME = 'zones'
-            LIMIT 1
-        ")->fetch();
-        
-        // CORRECTION : Vérification stricte que la contrainte existe bien sous forme de tableau
-        if ($contrainte && isset($contrainte['CONSTRAINT_NAME'])) {
-            $pdo->exec("ALTER TABLE signalements DROP FOREIGN KEY `{$contrainte['CONSTRAINT_NAME']}`");
-        }
-        $pdo->exec("ALTER TABLE signalements DROP COLUMN zone_id");
-    }
-} catch (\Throwable $e) {
-    error_log('Auto-réparation schéma (suppression zone_id) impossible : ' . $e->getMessage());
-}
-
-} catch (\Throwable $e) {
-    error_log('Auto-réparation schéma (push_subscriptions) impossible : ' . $e->getMessage());
-}
-
 try {
     $colonneExiste = $pdo->query("SHOW COLUMNS FROM signalements LIKE 'zone_id'")->fetch();
     if ($colonneExiste) {
@@ -101,7 +80,8 @@ try {
               AND COLUMN_NAME = 'zone_id' AND REFERENCED_TABLE_NAME = 'zones'
             LIMIT 1
         ")->fetch();
-        if ($contrainte) {
+
+        if ($contrainte && isset($contrainte['CONSTRAINT_NAME'])) {
             $pdo->exec("ALTER TABLE signalements DROP FOREIGN KEY `{$contrainte['CONSTRAINT_NAME']}`");
         }
         $pdo->exec("ALTER TABLE signalements DROP COLUMN zone_id");
