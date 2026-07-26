@@ -1,7 +1,3 @@
-
-
-
-
 <?php
 
 header("Access-Control-Allow-Origin: https://clearway-phi.vercel.app"); // ⚠️ REMPLACEZ par votre vraie URL Vercel
@@ -13,6 +9,13 @@ header("Access-Control-Allow-Credentials: true");
 if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     exit(0);
 }
+
+// URL absolue du backend (basée sur la requête réelle), pour construire des
+// liens de photo valides même si le frontend est sur un domaine différent
+// (Vercel) du backend (Railway) : un chemin relatif comme "../backend/uploads/"
+// se résout par rapport à la page du navigateur, pas par rapport à l'API.
+$origineBackend = (($_SERVER['HTTPS'] ?? 'off') !== 'off' ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'];
+
 
 
 // ============================================
@@ -93,7 +96,7 @@ function dureeEcoulee($date) {
     return $heures . 'h' . str_pad($reste, 2, '0', STR_PAD_LEFT);
 }
 
-$voies = array_map(function ($s) {
+$voies = array_map(function ($s) use ($origineBackend) {
     $estValide = (bool) $s['valide'];
     $base = $s['derniere_confirmation'] ?? $s['date_creation'];
     // Une fois validé, il n'y a plus d'archivage auto à annoncer
@@ -118,7 +121,7 @@ $voies = array_map(function ($s) {
         'nb_degagees' => (int) $s['nb_degagees'],
         'progression_degagee' => min(100, (int) round((int) $s['nb_degagees'] / SEUIL_CONFIRMATIONS_DEGAGEE * 100)),
         'heure_archivage' => $heureArchivage,
-        'photo' => $s['photo'] ? '../backend/uploads/' . $s['photo'] : null,
+        'photo' => $s['photo'] ? $origineBackend . '/uploads/' . $s['photo'] : null,
         'est_nouveau' => $estNouveau,
         'recemment_degagee' => (int) $s['nb_degagees'] >= SEUIL_CONFIRMATIONS_DEGAGEE,
         'lien_maps' => ($s['latitude'] !== null && $s['longitude'] !== null)

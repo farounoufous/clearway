@@ -1,6 +1,3 @@
-
-
-
 <?php
 header("Access-Control-Allow-Origin: https://clearway-phi.vercel.app"); // ⚠️ REMPLACEZ par votre vraie URL Vercel
 header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");

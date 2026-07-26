@@ -10,6 +10,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     exit(0);
 }
 
+// URL absolue du backend (basée sur la requête réelle) : cf. voies.php pour le détail
+$origineBackend = (($_SERVER['HTTPS'] ?? 'off') !== 'off' ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'];
+
 
 // ============================================
 // ClearWay Bénin - API Confirmation collaborative
@@ -158,7 +161,7 @@ if ($methode === 'GET') {
         // Une fois validé, le signalement ne s'archive plus jamais tout seul :
         // il n'y a donc plus de compte à rebours à afficher.
         'temps_restant' => $estValide ? null : tempsRestant($base),
-        'photo' => $s['photo'] ? '../backend/uploads/' . $s['photo'] : null,
+        'photo' => $s['photo'] ? $origineBackend . '/uploads/' . $s['photo'] : null,
         'lien_maps' => ($s['latitude'] !== null && $s['longitude'] !== null)
             ? "https://www.google.com/maps?q={$s['latitude']},{$s['longitude']}"
             : null,

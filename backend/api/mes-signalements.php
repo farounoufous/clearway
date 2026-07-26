@@ -10,6 +10,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     exit(0);
 }
 
+// URL absolue du backend (basée sur la requête réelle) : cf. voies.php pour le détail
+$origineBackend = (($_SERVER['HTTPS'] ?? 'off') !== 'off' ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'];
+
 
 // ============================================
 // ClearWay Bénin - API Mes signalements
@@ -78,7 +81,7 @@ function libelleZone($s) {
     return 'Localisation inconnue';
 }
 
-$resultats = array_map(function ($s) {
+$resultats = array_map(function ($s) use ($origineBackend) {
     return [
         'id' => (int) $s['id'],
         'zone' => libelleZone($s),
@@ -90,7 +93,7 @@ $resultats = array_map(function ($s) {
         'valide' => (bool) $s['valide'],
         'nb_confirmations' => (int) $s['nb_confirmations'],
         'date_creation' => dateLisible($s['date_creation']),
-        'photo' => $s['photo'] ? '../backend/uploads/' . $s['photo'] : null,
+        'photo' => $s['photo'] ? $origineBackend . '/uploads/' . $s['photo'] : null,
         'lien_maps' => ($s['latitude'] !== null && $s['longitude'] !== null)
             ? "https://www.google.com/maps?q={$s['latitude']},{$s['longitude']}"
             : null,
