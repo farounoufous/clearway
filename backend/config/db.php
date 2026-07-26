@@ -25,24 +25,26 @@ function ouvrirConnexion($host, $nom, $utilisateur, $motDePasse, $port = 3306) {
 
 $pdo = null;
 try {
-    // ---- Essai 1 : Votre environnement local XAMPP ----
+    // ---- Essai 1 : local XAMPP ----
     $pdo = ouvrirConnexion('localhost', 'clearway_benin', 'root', '');
 } catch (\Throwable $e) {
     try {
-        // ---- Essai 2 : Production via les variables existantes ----
-        $host = getenv('RAILWAY_PUBLIC_DOMAIN');
-        $database = getenv('RAILWAY_PROJECT_NAME');
-        $user = 'root'; // Utilisateur par défaut de Railway
-        $password = 'zRNupuCprSSUXMjLaHlWeqiGGdCIrSuW'; // Votre mot de passe secret
-        $port = 3306;
+        // ---- Essai 2 : Production Railway (Optimisé Vercel via getenv) ----
+        $host = getenv('MYSQLHOST');
         
         if (!$host) {
-            throw new \Exception("La variable RAILWAY_PUBLIC_DOMAIN est introuvable sur Vercel.");
+            throw new \Exception("Les variables d'environnement Railway ne sont pas détectées sur Vercel.");
         }
         
-        $pdo = ouvrirConnexion($host, $database, $user, $password, $port);
-        
+        $pdo = ouvrirConnexion(
+            $host,
+            getenv('MYSQLDATABASE'),
+            getenv('MYSQLUSER'),
+            getenv('MYSQLPASSWORD'),
+            getenv('MYSQLPORT') ?: 3306
+        );
     } catch (\Throwable $e_railway) {
+        // En cas d'échec total (local et production), on renvoie l'erreur en JSON propre
         http_response_code(200); 
         header('Content-Type: application/json; charset=utf-8');
         die(json_encode([
@@ -53,8 +55,6 @@ try {
         ]));
     }
 }
-
-    
 
 
 
@@ -68,29 +68,26 @@ try {
 // ============================================
 // Auto-réparation du schéma (Le reste de votre code d'origine)
 // ============================================
-try {
-    $colonneExiste = $pdo->query("SHOW COLUMNS FROM confirmations LIKE 'visiteur_id'")->fetch();
-    if (!$colonneExiste) {
-        $pdo->exec("ALTER TABLE confirmations ADD COLUMN visiteur_id VARCHAR(64) NULL AFTER ip_utilisateur");
+ try {
+    $colonneExiste = $pdo->query("SHOW COLUMNS FROM signalements LIKE 'zone_id'")->fetch();
+    if ($colonneExiste) {
+        $contrainte = $pdo->query("
+            SELECT CONSTRAINT_NAME FROM information_schema.KEY_COLUMN_USAGE
+            WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'signalements'
+              AND COLUMN_NAME = 'zone_id' AND REFERENCED_TABLE_NAME = 'zones'
+            LIMIT 1
+        ")->fetch();
+        
+        // CORRECTION : Vérification stricte que la contrainte existe bien sous forme de tableau
+        if ($contrainte && isset($contrainte['CONSTRAINT_NAME'])) {
+            $pdo->exec("ALTER TABLE signalements DROP FOREIGN KEY `{$contrainte['CONSTRAINT_NAME']}`");
+        }
+        $pdo->exec("ALTER TABLE signalements DROP COLUMN zone_id");
     }
 } catch (\Throwable $e) {
-    error_log('Auto-réparation schéma (visiteur_id) impossible : ' . $e->getMessage());
+    error_log('Auto-réparation schéma (suppression zone_id) impossible : ' . $e->getMessage());
 }
 
-try {
-    $tableExiste = $pdo->query("SHOW TABLES LIKE 'push_subscriptions'")->fetch();
-    if (!$tableExiste) {
-        $pdo->exec("
-            CREATE TABLE push_subscriptions (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                endpoint TEXT NOT NULL,
-                p256dh VARCHAR(255) NOT NULL,
-                auth_secret VARCHAR(255) NOT NULL,
-                date_creation DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                UNIQUE KEY endpoint_unique (endpoint(255))
-            ) ENGINE=InnoDB
-        ");
-    }
 } catch (\Throwable $e) {
     error_log('Auto-réparation schéma (push_subscriptions) impossible : ' . $e->getMessage());
 }
