@@ -9,6 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     exit(0);
 }
 
+    
 
 // ============================================
 // ClearWay Bénin - API Récemment dégagé
