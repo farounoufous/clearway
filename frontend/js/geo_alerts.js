@@ -30,19 +30,20 @@ function afficherMessage(conteneur, message) {
 function construireCarteAlerte(incident) {
   const distanceTexte = `à ${incident.distance_km.toFixed(1).replace('.', ',')} km`;
 
-  // Transformation de la div parente en lien HTML cliquable
+  // Utilisation de la classe maîtresse '.carte-voie' pour calquer le design de l'accueil, les effets de survol et le pointeur.
   return `
-    <a href="confirmation.html?id=${incident.id}" class="alerte-proximite ${incident.gravite_classe}" data-id="${incident.id}" style="text-decoration: none; color: inherit; display: block;">
-      <div class="alerte-proximite-tete">
-        <span class="pastille-gravite ${incident.gravite_classe}"></span>
-        <span class="alerte-proximite-type">${incident.type_obstacle}</span>
-        <span class="alerte-proximite-distance">${distanceTexte}</span>
+    <a href="confirmation.html?id=${incident.id}" class="carte-voie ${incident.gravite_classe}" data-id="${incident.id}">
+      <div class="nom-zone">
+        ${incident.zone} 
+        <span class="badge-nouveau" style="margin-left: 8px;">Proche (${distanceTexte})</span>
       </div>
-      <div class="alerte-proximite-zone">${incident.zone}</div>
-      ${incident.description ? `<div class="alerte-proximite-description">${incident.description}</div>` : ''}
+      <div class="info">Obstacle : ${incident.type_obstacle}</div>
+      ${incident.description ? `<div class="info" style="opacity: 0.8; font-style: italic; margin-top: 4px;">"${incident.description}"</div>` : ''}
     </a>
   `;
 }
+
+
 
 // ---- Affiche la liste complète des incidents reçus dans le conteneur ----
 
