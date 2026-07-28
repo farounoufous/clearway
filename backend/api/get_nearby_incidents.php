@@ -96,35 +96,44 @@ require_once dirname(__DIR__) . '/config/db.php';
 // entrées non numériques.
 // ============================================
 try {
-    $sql = "
-        SELECT
-            s.id,
-            s.type_obstacle,
-            s.gravite,
-            s.description,
-            s.latitude,
-            s.longitude,
-            s.pays,
-            s.ville,
-            s.quartier,
-            s.adresse_formatee,
-            s.date_creation,
-            (
-                6371 * ACOS(
-                    COS(RADIANS(:lat1)) * COS(RADIANS(s.latitude)) *
-                    COS(RADIANS(s.longitude) - RADIANS(:lng1)) +
-                    SIN(RADIANS(:lat2)) * SIN(RADIANS(s.latitude))
-                )
-            ) AS distance_km
-        FROM signalements s
-        WHERE s.valide = 1
-          AND s.statut = 'actif'
-          AND s.latitude IS NOT NULL
-          AND s.longitude IS NOT NULL
-        HAVING distance_km <= :rayon
-        ORDER BY distance_km ASC
-        LIMIT " . LIMITE_RESULTATS . "
-    ";
+    // 1) Modifiez la requête SQL pour être moins restrictive pendant vos tests (enlevez s.valide = 1 si vous n'avez pas de panneau d'administration pour valider)
+$sql = "
+    SELECT
+        s.id,
+        s.type_obstacle,
+        s.gravite,
+        s.description,
+        s.latitude,
+        s.longitude,
+        s.pays,
+        s.ville,
+        s.quartier,
+        s.adresse_formatee,
+        s.date_creation,
+        (
+            6371 * ACOS(
+                COS(RADIANS(:lat1)) * COS(RADIANS(s.latitude)) *
+                COS(RADIANS(s.longitude) - RADIANS(:lng1)) +
+                SIN(RADIANS(:lat2)) * SIN(RADIANS(s.latitude))
+            )
+        ) AS distance_km
+    FROM signalements s
+    WHERE s.statut = 'actif'
+      AND s.latitude IS NOT NULL
+      AND s.longitude IS NOT NULL
+    HAVING distance_km <= :rayon
+    ORDER BY distance_km ASC
+    LIMIT " . LIMITE_RESULTATS . "
+";
+
+// 2) Sécurisez la fonction de correspondance des classes en ignorant les majuscules
+$graviteClasse = function ($gravite) {
+    $g = strtolower($gravite); // Transforme 'Modere' ou 'Severe' en minuscules
+    if ($g === 'severe') return 'severe';
+    if ($g === 'modere') return 'modere';
+    return 'severe'; // Par défaut, on force une classe bloquante pour qu'elle s'affiche dans le rayon de 5km
+};
+
 
     $requete = $pdo->prepare($sql);
     $requete->bindValue(':lat1', $latitudeUtilisateur, PDO::PARAM_STR);
