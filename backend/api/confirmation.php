@@ -250,7 +250,7 @@ if ($methode === 'POST') {
             require_once __DIR__ . '/../lib/WebPush.php';
             require_once __DIR__ . '/../config/vapid.php';
 
-            $stmtZoneNom = $pdo->prepare("SELECT quartier, ville FROM signalements WHERE id = ?");
+            $stmtZoneNom = $pdo->prepare("SELECT quartier, ville, latitude, longitude FROM signalements WHERE id = ?");
             $stmtZoneNom->execute([$signalementId]);
             $ligneZone = $stmtZoneNom->fetch();
             $nomZone = ($ligneZone['quartier'] ?: $ligneZone['ville']) ?: 'Une voie';
@@ -261,7 +261,34 @@ if ($methode === 'POST') {
             ]);
 
             $webpush = new WebPush(VAPID_CLE_PUBLIQUE, VAPID_CLE_PRIVEE, VAPID_SUBJECT);
-            $abonnements = $pdo->query("SELECT id, endpoint, p256dh, auth_secret FROM push_subscriptions")->fetchAll();
+
+            // ---- Alertes push UNIQUEMENT dans un rayon de 5 km ----
+            // Même règle que pour un nouveau signalement (voir signalement.php) :
+            // seuls les abonnés situés à moins de 5 km de CETTE voie sont notifiés.
+            $abonnements = [];
+            $latitudeVoie = $ligneZone['latitude'] !== null ? (float) $ligneZone['latitude'] : null;
+            $longitudeVoie = $ligneZone['longitude'] !== null ? (float) $ligneZone['longitude'] : null;
+
+            if ($latitudeVoie !== null && $longitudeVoie !== null) {
+                $stmtAbonnements = $pdo->prepare("
+                    SELECT id, endpoint, p256dh, auth_secret
+                    FROM push_subscriptions
+                    WHERE latitude IS NOT NULL
+                      AND longitude IS NOT NULL
+                      AND (
+                          6371 * ACOS(
+                              COS(RADIANS(:lat1)) * COS(RADIANS(latitude)) *
+                              COS(RADIANS(longitude) - RADIANS(:lng1)) +
+                              SIN(RADIANS(:lat2)) * SIN(RADIANS(latitude))
+                          )
+                      ) <= 5
+                ");
+                $stmtAbonnements->bindValue(':lat1', $latitudeVoie);
+                $stmtAbonnements->bindValue(':lat2', $latitudeVoie);
+                $stmtAbonnements->bindValue(':lng1', $longitudeVoie);
+                $stmtAbonnements->execute();
+                $abonnements = $stmtAbonnements->fetchAll();
+            }
 
             foreach ($abonnements as $abonnement) {
                 try {

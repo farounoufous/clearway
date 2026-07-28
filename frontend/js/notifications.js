@@ -1,7 +1,3 @@
-// ============================================
-// ClearWay Bénin - Cloche : panneau de notifications + notifications push
-// ============================================
-
 window.API_BASE = window.API_BASE || 'https://clearway-production-6e27.up.railway.app/api';
 
 const VAPID_CLE_PUBLIQUE = 'BNR9zjMkuQjAYjtDMbCes8M5_VH0Dx9qRCUlkYLc7KfbKiwWzc2Re_Avs4bfJDjjc-qk8KgQFViVIhyjeq8vFtY';
@@ -137,6 +133,32 @@ async function actualiserEtatCloche() {
   return abonnement;
 }
 
+// Récupère la position GPS actuelle de l'utilisateur, sous forme de Promise.
+// Les alertes push n'étant envoyées que dans un rayon de 5 km, on a besoin
+// de connaître la position de l'abonné au moment de l'activation.
+// Ne bloque jamais l'abonnement : en cas de refus/échec, on renvoie
+// simplement { latitude: null, longitude: null } (l'abonné ne recevra
+// alors aucune alerte push tant qu'il n'aura pas partagé sa position).
+function recupererPositionPourAbonnement() {
+  return new Promise((resolve) => {
+    if (!('geolocation' in navigator)) {
+      resolve({ latitude: null, longitude: null });
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        resolve({ latitude: position.coords.latitude, longitude: position.coords.longitude });
+      },
+      (erreur) => {
+        console.warn('Position indisponible pour les alertes push :', erreur);
+        resolve({ latitude: null, longitude: null });
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+    );
+  });
+}
+
 async function activerNotifications() {
   if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
     alert("Ton navigateur ne supporte pas les notifications push.");
@@ -156,11 +178,20 @@ async function activerNotifications() {
       applicationServerKey: urlBase64VersUint8Array(VAPID_CLE_PUBLIQUE),
     });
 
+    // On joint la position GPS à l'abonnement : le serveur ne notifiera cet
+    // appareil que pour les voies bloquées situées à moins de 5 km de là
+    const { latitude, longitude } = await recupererPositionPourAbonnement();
+    const abonnementAvecPosition = { ...subscription.toJSON(), latitude, longitude };
+
     await fetch(`${window.API_BASE}/push-subscribe.php`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(subscription),
+      body: JSON.stringify(abonnementAvecPosition),
     });
+
+    if (latitude === null) {
+      alert("Notifications activées, mais sans ta position tu ne recevras aucune alerte. Autorise la géolocalisation pour être prévenu des voies bloquées à moins de 5 km de toi.");
+    }
 
     mettreAJourClocheVisuel(true);
 

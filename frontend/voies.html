@@ -21,6 +21,14 @@
   </div>
 
   <div class="contenu">
+    <div class="section-derniers">
+      <h2 class="titre-section">Près de vous (rayon 5 km)</h2>
+      <div class="liste-signalements" id="liste-alertes-proximite">
+        <div class="squelette-carte"></div>
+        <div class="squelette-carte"></div>
+      </div>
+    </div>
+
     <div class="champ-recherche">
       <input type="search" id="recherche-zone" placeholder="Rechercher une zone (ex : Godomey)" aria-label="Rechercher une zone">
     </div>
@@ -35,5 +43,6 @@
 
 <script src="js/sw-register.js"></script>
 <script src="js/voies.js"></script>
+<script src="js/geo_alerts.js"></script>
 </body>
 </html>

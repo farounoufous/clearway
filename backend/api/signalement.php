@@ -216,7 +216,34 @@ try {
     ]);
 
     $webpush = new WebPush(VAPID_CLE_PUBLIQUE, VAPID_CLE_PRIVEE, VAPID_SUBJECT);
-    $abonnements = $pdo->query("SELECT id, endpoint, p256dh, auth_secret FROM push_subscriptions")->fetchAll();
+
+    // ---- Alertes push UNIQUEMENT dans un rayon de 5 km ----
+    // On ne récupère que les abonnés dont la position connue est à moins de
+    // 5 km de CE signalement (formule de Haversine). Un abonné sans position
+    // enregistrée (latitude/longitude NULL, géolocalisation refusée lors de
+    // l'activation) n'est jamais notifié : on ne peut pas savoir s'il est
+    // concerné, donc par prudence on ne le dérange pas.
+    $abonnements = [];
+    if ($latitude !== null && $longitude !== null) {
+        $stmtAbonnements = $pdo->prepare("
+            SELECT id, endpoint, p256dh, auth_secret
+            FROM push_subscriptions
+            WHERE latitude IS NOT NULL
+              AND longitude IS NOT NULL
+              AND (
+                  6371 * ACOS(
+                      COS(RADIANS(:lat1)) * COS(RADIANS(latitude)) *
+                      COS(RADIANS(longitude) - RADIANS(:lng1)) +
+                      SIN(RADIANS(:lat2)) * SIN(RADIANS(latitude))
+                  )
+              ) <= 5
+        ");
+        $stmtAbonnements->bindValue(':lat1', $latitude);
+        $stmtAbonnements->bindValue(':lat2', $latitude);
+        $stmtAbonnements->bindValue(':lng1', $longitude);
+        $stmtAbonnements->execute();
+        $abonnements = $stmtAbonnements->fetchAll();
+    }
 
     foreach ($abonnements as $abonnement) {
         try {

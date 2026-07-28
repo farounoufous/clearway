@@ -84,11 +84,18 @@ CREATE TABLE IF NOT EXISTS confirmations (
 -- Table 3 : push_subscriptions (notifications)
 -- Un abonnement par navigateur/appareil ayant accepté les notifications
 -- ============================================
+-- latitude/longitude : position de l'abonné au moment de l'activation des
+-- alertes push, utilisée pour ne notifier que les abonnés situés à moins
+-- de 5 km d'un nouveau signalement (voir backend/api/signalement.php et
+-- backend/api/confirmation.php). NULL si l'abonné a refusé la géolocalisation
+-- : dans ce cas il n'est jamais notifié (pas de position = pas d'alerte).
 CREATE TABLE IF NOT EXISTS push_subscriptions (
     id INT AUTO_INCREMENT PRIMARY KEY,
     endpoint TEXT NOT NULL,
     p256dh VARCHAR(255) NOT NULL,
     auth_secret VARCHAR(255) NOT NULL,
+    latitude DECIMAL(10,7) NULL,
+    longitude DECIMAL(10,7) NULL,
     date_creation DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE KEY endpoint_unique (endpoint(255))
 ) ENGINE=InnoDB;

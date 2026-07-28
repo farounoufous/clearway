@@ -35,13 +35,28 @@ if ($methode === 'POST') {
         exit;
     }
 
+    // Position de l'abonné au moment de l'activation des alertes push.
+    // Optionnelle : si absente ou invalide, on stocke NULL — un abonné sans
+    // position connue ne recevra simplement aucune alerte (voir signalement.php
+    // et confirmation.php, qui filtrent par rayon de 5 km).
+    $latitude = filter_var($donnees['latitude'] ?? null, FILTER_VALIDATE_FLOAT);
+    $longitude = filter_var($donnees['longitude'] ?? null, FILTER_VALIDATE_FLOAT);
+
+    if ($latitude === false || $latitude < -90 || $latitude > 90) {
+        $latitude = null;
+    }
+    if ($longitude === false || $longitude < -180 || $longitude > 180) {
+        $longitude = null;
+    }
+
     // INSERT ... ON DUPLICATE KEY : évite les doublons si le navigateur se réabonne
     $stmt = $pdo->prepare("
-        INSERT INTO push_subscriptions (endpoint, p256dh, auth_secret, date_creation)
-        VALUES (?, ?, ?, NOW())
-        ON DUPLICATE KEY UPDATE p256dh = VALUES(p256dh), auth_secret = VALUES(auth_secret)
+        INSERT INTO push_subscriptions (endpoint, p256dh, auth_secret, latitude, longitude, date_creation)
+        VALUES (?, ?, ?, ?, ?, NOW())
+        ON DUPLICATE KEY UPDATE p256dh = VALUES(p256dh), auth_secret = VALUES(auth_secret),
+                                 latitude = VALUES(latitude), longitude = VALUES(longitude)
     ");
-    $stmt->execute([$endpoint, $p256dh, $auth]);
+    $stmt->execute([$endpoint, $p256dh, $auth, $latitude, $longitude]);
 
     echo json_encode(['succes' => true]);
     exit;

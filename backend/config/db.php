@@ -1,8 +1,6 @@
 <?php
-// backend/config/db.php
 date_default_timezone_set('Africa/Porto-Novo');
 
-// En-têtes CORS corrigés ici aussi pour plus de sécurité
 header("Access-Control-Allow-Origin: https://clearway-phi.vercel.app");
 header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
 header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE");
@@ -46,8 +44,6 @@ try {
     } catch (\Throwable $e_railway) {
         // En cas d'échec total (local et production), on renvoie une erreur JSON propre
         // avec un VRAI code d'erreur HTTP (500) : les en-têtes CORS sont déjà envoyés
-        // plus haut et fonctionnent avec n'importe quel code de statut. Un 200 ici ferait
-        // croire au frontend que la requête a réussi alors qu'aucune donnée n'a été lue/écrite.
         http_response_code(500);
         header('Content-Type: application/json; charset=utf-8');
         die(json_encode([
@@ -61,16 +57,19 @@ try {
     }
 }
 
-// Aligne aussi l'horloge MySQL sur le Bénin (GMT+1)
 try {
     $pdo->exec("SET time_zone = '+01:00'");
 } catch (\Throwable $e) {
     error_log('Réglage fuseau horaire MySQL impossible : ' . $e->getMessage());
 }
 
-// ============================================
-// Auto-réparation du schéma
-// ============================================
+try {
+    $schemaDejaAJour = (bool) $pdo->query("SHOW COLUMNS FROM signalements LIKE 'valide'")->fetch();
+} catch (\Throwable $e) {
+    $schemaDejaAJour = false;
+}
+
+if (!$schemaDejaAJour) {
 try {
     $colonneExiste = $pdo->query("SHOW COLUMNS FROM signalements LIKE 'zone_id'")->fetch();
     if ($colonneExiste) {
@@ -133,4 +132,15 @@ try {
     }
 } catch (\Throwable $e) {
     error_log('Auto-réparation schéma (valide) impossible : ' . $e->getMessage());
+}
+
+} 
+try {
+    $colonneExiste = $pdo->query("SHOW COLUMNS FROM push_subscriptions LIKE 'latitude'")->fetch();
+    if (!$colonneExiste) {
+        $pdo->exec("ALTER TABLE push_subscriptions ADD COLUMN latitude DECIMAL(10,7) NULL AFTER auth_secret");
+        $pdo->exec("ALTER TABLE push_subscriptions ADD COLUMN longitude DECIMAL(10,7) NULL AFTER latitude");
+    }
+} catch (\Throwable $e) {
+    error_log('Auto-réparation schéma (géolocalisation push_subscriptions) impossible : ' . $e->getMessage());
 }
