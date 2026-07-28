@@ -1,10 +1,3 @@
-// ============================================
-// ClearWay Bénin - Écran Mes signalements
-// Historique 100% local : aucun compte requis. Les IDs des signalements
-// créés par ce visiteur sont mémorisés dans son navigateur (voir signalement.js)
-// et servent ici à retrouver leur détail auprès du backend.
-// ============================================
-
 window.API_BASE = window.API_BASE || 'https://clearway-production-6e27.up.railway.app/api';
 
 const CLE_MES_SIGNALEMENTS = 'clearway_mes_signalements';

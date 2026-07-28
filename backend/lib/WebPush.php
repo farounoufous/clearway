@@ -1,10 +1,4 @@
 <?php
-// ============================================
-// ClearWay Bénin - Librairie Web Push
-// Implémente RFC 8291 (chiffrement aes128gcm) + RFC 8292 (VAPID)
-// Sans dépendance externe (Composer/Packagist non nécessaire)
-// ============================================
-
 class WebPush
 {
     private string $vapidPublicKeyB64;
@@ -18,7 +12,7 @@ class WebPush
         $this->vapidSubject = $vapidSubject;
     }
 
-    // ---------- Utilitaires base64url ----------
+    //Utilitaires base64url
     private static function b64urlEncode(string $data): string
     {
         return rtrim(strtr(base64_encode($data), '+/', '-_'), '=');
@@ -29,7 +23,7 @@ class WebPush
         return base64_decode(strtr($data, '-_', '+/') . str_repeat('=', (4 - strlen($data) % 4) % 4));
     }
 
-    // ---------- HKDF (RFC 5869) ----------
+    // HKDF (RFC 5869)
     private static function hkdf(string $salt, string $ikm, string $info, int $length): string
     {
         $prk = hash_hmac('sha256', $ikm, $salt, true);
@@ -44,7 +38,7 @@ class WebPush
         return substr($okm, 0, $length);
     }
 
-    // ---------- Reconstruit une ressource clé publique EC depuis un point brut (65 octets) ----------
+    // Reconstruit une ressource clé publique EC depuis un point brut (65 octets)
     private static function clePubliqueDepuisPointBrut(string $pointBrut)
     {
         $x = substr($pointBrut, 1, 32);
@@ -54,7 +48,7 @@ class WebPush
         return openssl_pkey_get_public($pem);
     }
 
-    // ---------- Génère une paire de clés EC P-256, retourne aussi le point public brut ----------
+    //Genère une paire de clés EC P-256, retourne aussi le point public brut
     private static function genererPaireCles(): array
     {
         $res = openssl_pkey_new(['curve_name' => 'prime256v1', 'private_key_type' => OPENSSL_KEYTYPE_EC]);
@@ -63,7 +57,7 @@ class WebPush
         return ['priv' => $res, 'pub_raw' => $pubRaw];
     }
 
-    // ---------- Convertit une signature ECDSA DER en format brut r||s (64 octets, requis par JWS) ----------
+    // Convertit une signature ECDSA DER en format brut r||s (64 octets, requis par JWS
     private static function derVersSignatureBrute(string $der): string
     {
         $offset = 3;
@@ -81,7 +75,7 @@ class WebPush
         return $r . $s;
     }
 
-    // ---------- Génère le JWT VAPID (Authorization) pour un endpoint donné ----------
+    //Génère le JWT VAPID (Authorization) pour un endpoint donné
     private function genererJwtVapid(string $audience): string
     {
         $privatePem = "-----BEGIN EC PRIVATE KEY-----\n"; // reconstruit depuis la clé stockée

@@ -13,14 +13,6 @@ header("Access-Control-Allow-Credentials: true");
 if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     exit(0);
 }
-
-
-// ============================================
-// ClearWay Bénin - API Signalement
-// Reçoit le formulaire (multipart/form-data, à cause de la photo) et l'enregistre
-// Sans compte requis - cf. maquette écran 02
-// ============================================
-
 header('Content-Type: application/json; charset=utf-8');
 require_once dirname(__DIR__) . '/config/db.php';
 
@@ -38,9 +30,6 @@ $description              = trim($_POST['description'] ?? '');
 
 // ---- Localisation : obligatoire, fournie soit par la géolocalisation du
 // navigateur ("Utiliser ma position"), soit par un point choisi sur la carte
-// ("Choisir sur la carte"). Il n'y a plus de liste de zones : latitude/longitude
-// sont la donnée de référence, le reste (pays/ville/quartier/adresse) est
-// indicatif et vient du géocodage inversé fait côté client. ----
 $latitude       = null;
 $longitude      = null;
 $accuracy       = null;

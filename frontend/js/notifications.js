@@ -20,11 +20,7 @@ function urlBase64VersUint8Array(base64String) {
   const rawData = window.atob(base64);
   return Uint8Array.from([...rawData].map(char => char.charCodeAt(0)));
 }
-
-// ============================================
 // Panneau de notifications (clic sur la cloche)
-// ============================================
-
 function formaterDateRelative(dateIso) {
   const diffMinutes = Math.max(0, Math.floor((Date.now() - new Date(dateIso).getTime()) / 60000));
   if (diffMinutes < 1) return "à l'instant";
@@ -79,10 +75,6 @@ document.addEventListener('click', (evenement) => {
     fermerPanneauNotifications();
   }
 });
-
-// ============================================
-// Notifications push (activation/désactivation réelle du navigateur)
-// ============================================
 
 function fermerModal() {
   overlay.hidden = true;
@@ -246,3 +238,50 @@ btnTogglePush.addEventListener('click', async (evenement) => {
 });
 
 document.addEventListener('DOMContentLoaded', actualiserEtatCloche);
+
+// ============================================
+// Mise à jour périodique de la position (abonnés déjà actifs)
+//
+// La position n'est plus figée au seul moment de l'activation : tant que
+// les alertes push sont actives sur cet appareil, on rafraîchit la position
+// GPS régulièrement et on la renvoie au serveur. Ainsi, si l'utilisateur se
+// déplace (ex: Cotonou -> Porto-Novo), le filtre "5 km" côté serveur reste
+// basé sur sa position réelle, pas sur celle du jour de l'activation.
+// ============================================
+
+// Toutes les 5 minutes : assez souvent pour suivre un déplacement réel,
+// assez espacé pour ne pas vider la batterie ni spammer l'API
+const INTERVALLE_MAJ_POSITION_MS = 5 * 60 * 1000;
+
+async function actualiserPositionAbonnement() {
+  const abonnement = await obtenirAbonnementActuel();
+
+  // Rien à faire si les alertes push ne sont pas activées sur cet appareil
+  if (!abonnement) return;
+
+  const { latitude, longitude } = await recupererPositionPourAbonnement();
+
+  // Si la position est indisponible cette fois-ci (GPS coupé un instant,
+  // timeout...), on ne renvoie rien plutôt que d'écraser une position valide
+  // déjà enregistrée en base par un NULL
+  if (latitude === null || longitude === null) return;
+
+  try {
+    await fetch(`${window.API_BASE}/push-subscribe.php`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...abonnement.toJSON(), latitude, longitude }),
+    });
+  } catch (erreur) {
+    // Un échec de mise à jour n'est pas grave : l'ancienne position reste
+    // valable jusqu'au prochain essai, 5 minutes plus tard
+    console.warn('Mise à jour de la position push impossible :', erreur);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  // Une actualisation dès l'ouverture de la page (utile si l'utilisateur a
+  // changé de zone depuis sa dernière visite), puis en tâche de fond ensuite
+  actualiserPositionAbonnement();
+  setInterval(actualiserPositionAbonnement, INTERVALLE_MAJ_POSITION_MS);
+});

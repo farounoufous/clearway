@@ -1,5 +1,4 @@
 <?php
-
 header("Access-Control-Allow-Origin: https://clearway-phi.vercel.app"); // ⚠️ REMPLACEZ par votre vraie URL Vercel
 header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
 header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE");
@@ -12,19 +11,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 
 // URL absolue du backend (basée sur la requête réelle) : cf. voies.php pour le détail
 $origineBackend = (($_SERVER['HTTPS'] ?? 'off') !== 'off' ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'];
-
-
-// ============================================
-// ClearWay Bénin - API Confirmation collaborative
-// GET  ?id=X            -> détails du signalement (zone, gravité, confirmations, progression, temps restant, photo)
-// POST {signalement_id, action, visiteur_id}
-//
-// Règle "voie dégagée" : il faut 3 confirmations de 3 VISITEURS DIFFÉRENTS
-// (identifiant anonyme généré par le navigateur, pas l'IP) avant que le
-// signalement soit archivé (retiré de la liste des voies bloquées).
-// Le propriétaire du signalement PEUT voter "voie dégagée" (ça compte pour 1
-// des 3), mais ne peut JAMAIS voter "toujours bloquée" sur son propre signalement.
-// ============================================
 
 header('Content-Type: application/json; charset=utf-8');
 require_once dirname(__DIR__) . '/config/db.php';

@@ -1,7 +1,3 @@
-// ============================================
-// ClearWay Bénin - Écran Formulaire de signalement
-// ============================================
-
 // Déclaré via window pour rester cohérent avec les autres pages et éviter
 // tout conflit si un autre script venait à être ajouté sur cette page
 window.API_BASE = window.API_BASE || 'https://clearway-production-6e27.up.railway.app/api';

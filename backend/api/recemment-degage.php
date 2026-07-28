@@ -9,14 +9,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     exit(0);
 }
 
-    
-
-// ============================================
-// ClearWay Bénin - API Récemment dégagé
-// Liste les signalements archivés via 3 confirmations "voie dégagée"
-// dans les dernières 24h (pour montrer que le système fonctionne vraiment)
-// ============================================
-
 header('Content-Type: application/json; charset=utf-8');
 require_once dirname(__DIR__) . '/config/db.php';
 

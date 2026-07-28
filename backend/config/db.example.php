@@ -1,10 +1,4 @@
 <?php
-// ============================================
-// ClearWay Bénin - Modèle de configuration base de données
-// Copie ce fichier en "db.php" et renseigne tes vrais identifiants.
-// "db.php" est exclu de Git (.gitignore) car il contient des secrets.
-// ============================================
-
 function ouvrirConnexion($host, $nom, $utilisateur, $motDePasse) {
     return new PDO(
         "mysql:host=$host;dbname=$nom;charset=utf8mb4",
@@ -31,12 +25,6 @@ try {
         die(json_encode(['erreur' => 'Connexion base de données impossible : ' . $e2->getMessage()]));
     }
 }
-
-// ============================================
-// Auto-réparation du schéma
-// Ajoute silencieusement les colonnes/tables ajoutées au fil des évolutions
-// du projet si elles manquent encore sur CETTE base.
-// ============================================
 try {
     $colonneExiste = $pdo->query("SHOW COLUMNS FROM confirmations LIKE 'visiteur_id'")->fetch();
     if (!$colonneExiste) {

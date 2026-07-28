@@ -1,9 +1,3 @@
-// ============================================
-// ClearWay Bénin - Panneau déroulant du menu (hamburger)
-// Même comportement que le panneau de notifications : petit panneau ancré
-// sous le bouton, fermeture au clic en dehors (pas de fond assombri)
-// ============================================
-
 const btnMenu = document.getElementById('btn-menu');
 const menuLateral = document.getElementById('menu-lateral');
 const btnFermerMenu = document.getElementById('btn-fermer-menu');

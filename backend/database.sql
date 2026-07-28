@@ -1,29 +1,7 @@
--- ============================================
--- ClearWay Bénin - Base de données (schéma consolidé)
---
--- Fichier unique : plus de table `zones` / sélecteur "Zone/Quartier". La
--- localisation d'un signalement vient uniquement de :
---   - la géolocalisation du navigateur ("Utiliser ma position"), ou
---   - un point choisi sur la carte Leaflet/OpenStreetMap ("Choisir sur la carte")
--- Le pays/ville/quartier/adresse sont ensuite déduits par géocodage inversé
--- (Nominatim) côté client, et enregistrés à titre indicatif : la donnée de
--- référence reste latitude/longitude.
---
--- Portable par défaut (pas de CREATE DATABASE / USE, interdits sur les
--- hébergements mutualisés type InfinityFree où la base est déjà créée depuis
--- le panneau de contrôle). En local (XAMPP...), crée d'abord la base :
---
---   CREATE DATABASE IF NOT EXISTS clearway_benin
---     CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
---   USE clearway_benin;
---
 -- Note : backend/config/db.php sait aussi mettre à jour tout seul le schéma
 -- d'une base déjà existante (auto-réparation, y compris suppression de
 -- l'ancienne table zones) : ce fichier sert surtout pour une toute première
 -- installation.
--- ============================================
-
--- ============================================
 -- Table 1 : signalements (le coeur du système)
 --
 -- Règle "voie dégagée" : il faut 3 confirmations "voie_degagee" de 3
@@ -62,14 +40,7 @@ CREATE TABLE IF NOT EXISTS signalements (
     date_archivage DATETIME NULL
 ) ENGINE=InnoDB;
 
--- ============================================
 -- Table 2 : confirmations (confirmation collaborative en 1 clic)
---
--- visiteur_id : identifiant anonyme généré par le navigateur (et non l'IP),
--- pour reconnaître de façon fiable des visiteurs distincts. ip_utilisateur
--- est conservé comme repli pour d'anciennes lignes créées avant l'ajout de
--- visiteur_id (voir COALESCE(visiteur_id, ip_utilisateur) dans les requêtes).
--- ============================================
 CREATE TABLE IF NOT EXISTS confirmations (
     id INT AUTO_INCREMENT PRIMARY KEY,
     signalement_id INT NOT NULL,
@@ -80,15 +51,7 @@ CREATE TABLE IF NOT EXISTS confirmations (
     FOREIGN KEY (signalement_id) REFERENCES signalements(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
--- ============================================
 -- Table 3 : push_subscriptions (notifications)
--- Un abonnement par navigateur/appareil ayant accepté les notifications
--- ============================================
--- latitude/longitude : position de l'abonné au moment de l'activation des
--- alertes push, utilisée pour ne notifier que les abonnés situés à moins
--- de 5 km d'un nouveau signalement (voir backend/api/signalement.php et
--- backend/api/confirmation.php). NULL si l'abonné a refusé la géolocalisation
--- : dans ce cas il n'est jamais notifié (pas de position = pas d'alerte).
 CREATE TABLE IF NOT EXISTS push_subscriptions (
     id INT AUTO_INCREMENT PRIMARY KEY,
     endpoint TEXT NOT NULL,
@@ -100,9 +63,7 @@ CREATE TABLE IF NOT EXISTS push_subscriptions (
     UNIQUE KEY endpoint_unique (endpoint(255))
 ) ENGINE=InnoDB;
 
--- ============================================
 -- Index utiles pour les requêtes fréquentes
--- ============================================
 CREATE INDEX idx_signalements_statut ON signalements(statut);
 CREATE INDEX idx_signalements_valide ON signalements(valide);
 CREATE INDEX idx_signalements_gravite ON signalements(gravite);

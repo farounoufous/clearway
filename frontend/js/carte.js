@@ -1,13 +1,3 @@
-
-
-
-// ============================================
-// ClearWay Bénin - Écran Carte des zones (Leaflet)
-// Affiche les voies bloquées (rouge), ralenties (orange) et récemment
-// dégagées (vert) sur une carte OpenStreetMap centrée sur Cotonou,
-// avec clustering, pop-ups d'action et géolocalisation de l'utilisateur.
-// ============================================
-
 window.API_BASE = window.API_BASE || 'https://clearway-production-6e27.up.railway.app/api';
 
 // Même clé que confirmation.js : un même visiteur garde le même identifiant
@@ -32,8 +22,6 @@ const carte = L.map('carte-zones', {
   attributionControl: true,
 }).setView(CENTRE_COTONOU, ZOOM_DEFAUT);
 
-// Le contrôle de zoom par défaut est en haut à gauche : on le laisse là pour
-// ne pas entrer en conflit avec le bouton flottant de géolocalisation (bas-droite)
 carte.zoomControl.setPosition('topleft');
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {

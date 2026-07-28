@@ -10,13 +10,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     exit(0);
 }
 
-
-// ============================================
-// ClearWay Bénin - API Abonnement Push
-// POST   : reçoit l'abonnement envoyé par le navigateur et le stocke
-// DELETE : supprime un abonnement (désactivation des notifications)
-// ============================================
-
 header('Content-Type: application/json; charset=utf-8');
 require_once dirname(__DIR__) . '/config/db.php';
 
@@ -36,9 +29,6 @@ if ($methode === 'POST') {
     }
 
     // Position de l'abonné au moment de l'activation des alertes push.
-    // Optionnelle : si absente ou invalide, on stocke NULL — un abonné sans
-    // position connue ne recevra simplement aucune alerte (voir signalement.php
-    // et confirmation.php, qui filtrent par rayon de 5 km).
     $latitude = filter_var($donnees['latitude'] ?? null, FILTER_VALIDATE_FLOAT);
     $longitude = filter_var($donnees['longitude'] ?? null, FILTER_VALIDATE_FLOAT);
 

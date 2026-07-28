@@ -17,11 +17,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     exit(0);
 }
 
-// ============================================
-// ClearWay Bénin - API Accueil
-// Retourne : stats (voies bloquées / signalements actifs) + 3 derniers signalements
-// ============================================
-
 header('Content-Type: application/json; charset=utf-8');
 require_once dirname(__DIR__) . '/config/db.php';
 

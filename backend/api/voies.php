@@ -16,23 +16,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 // se résout par rapport à la page du navigateur, pas par rapport à l'API.
 $origineBackend = (($_SERVER['HTTPS'] ?? 'off') !== 'off' ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'];
 
-
-
-// ============================================
-// ClearWay Bénin - API Voies impraticables
-// - Archive automatiquement les signalements NON VALIDÉS sans confirmation depuis 3h
-// - Un signalement validé (>= 3 confirmations "toujours bloquée" de visiteurs
-//   distincts) n'est plus jamais archivé par ce mécanisme : il ne disparaît
-//   que via le circuit "voie dégagée" + confirmer_degagement (voir confirmation.php)
-// - Retourne la liste triée : Sévère > Modéré > Praticable (puis plus récent d'abord)
-// ============================================
-
 header('Content-Type: application/json; charset=utf-8');
 require_once dirname(__DIR__) . '/config/db.php';
 
 // ---- 1. Archivage automatique : 3h sans confirmation depuis la création
-//         ou depuis la dernière confirmation, UNIQUEMENT si le signalement
-//         n'a pas encore été validé par la communauté ----
 $pdo->exec("
     UPDATE signalements
     SET statut = 'archive', date_archivage = NOW()

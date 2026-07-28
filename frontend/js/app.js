@@ -1,8 +1,3 @@
-// ============================================
-// ClearWay Bénin - Écran Accueil
-// Va chercher les données auprès du backend (PHP/MySQL) et les affiche
-// ============================================
-
 window.API_BASE = window.API_BASE || 'https://clearway-production-6e27.up.railway.app/api';
 
 const CLE_SIGNALEMENTS_VUS = 'clearway_signalements_vus';

@@ -13,14 +13,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 // URL absolue du backend (basée sur la requête réelle) : cf. voies.php pour le détail
 $origineBackend = (($_SERVER['HTTPS'] ?? 'off') !== 'off' ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'];
 
-
-// ============================================
-// ClearWay Bénin - API Mes signalements
-// Pas de compte utilisateur : le navigateur mémorise localement les IDs
-// des signalements qu'il a créés, et les envoie ici pour en récupérer le détail.
-// GET ?ids=12,15,23
-// ============================================
-
 header('Content-Type: application/json; charset=utf-8');
 require_once dirname(__DIR__) . '/config/db.php';
 

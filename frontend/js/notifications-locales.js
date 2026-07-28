@@ -1,10 +1,3 @@
-// ============================================
-// ClearWay Bénin - Notifications locales (cloche)
-// Journal léger, stocké dans le navigateur, indépendant des vraies
-// notifications push : fonctionne pour tout le monde, même sans avoir
-// accepté les alertes push. Alimente le compteur affiché sur la cloche.
-// ============================================
-
 const CLE_NOTIFICATIONS_LOCALES = 'clearway_notifications_locales';
 const CLE_IDS_CONNUS = 'clearway_ids_connus';
 const MAX_NOTIFICATIONS = 30;

@@ -1,10 +1,6 @@
-// ============================================
-// ClearWay Bénin - Mode sombre / clair
 // Par défaut, l'app suit le réglage du système (prefers-color-scheme).
 // Ce script permet de FORCER un choix explicite via le bouton du menu,
 // qui prime alors sur le système jusqu'à ce que l'utilisateur le change.
-// ============================================
-
 const CLE_THEME = 'clearway_theme';
 
 // ---- Applique tout de suite la préférence sauvegardée (avant l'affichage,

@@ -1,10 +1,3 @@
-// ============================================
-// ClearWay Bénin - Service Worker
-// 1) Reçoit les notifications push même quand l'app n'est pas ouverte
-// 2) Met en cache l'app + les dernières données connues, pour que l'appli
-//    reste utilisable (même en lecture seule) en cas de coupure réseau
-// ============================================
-
 const VERSION_CACHE = 'clearway-v3';
 const CACHE_SHELL = `${VERSION_CACHE}-shell`;
 const CACHE_DONNEES = `${VERSION_CACHE}-donnees`;

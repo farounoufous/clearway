@@ -1,6 +1,5 @@
 
 
-# Photos uploadées par les utilisateurs (données runtime, pas du code)
 backend/uploads/*
 !backend/uploads/.htaccess
 !backend/uploads/.gitkeep
