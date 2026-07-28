@@ -30,8 +30,9 @@ function afficherMessage(conteneur, message) {
 function construireCarteAlerte(incident) {
   const distanceTexte = `à ${incident.distance_km.toFixed(1).replace('.', ',')} km`;
 
+  // Transformation de la div parente en lien HTML cliquable
   return `
-    <div class="alerte-proximite ${incident.gravite_classe}" data-id="${incident.id}">
+    <a href="confirmation.html?id=${incident.id}" class="alerte-proximite ${incident.gravite_classe}" data-id="${incident.id}" style="text-decoration: none; color: inherit; display: block;">
       <div class="alerte-proximite-tete">
         <span class="pastille-gravite ${incident.gravite_classe}"></span>
         <span class="alerte-proximite-type">${incident.type_obstacle}</span>
@@ -39,7 +40,7 @@ function construireCarteAlerte(incident) {
       </div>
       <div class="alerte-proximite-zone">${incident.zone}</div>
       ${incident.description ? `<div class="alerte-proximite-description">${incident.description}</div>` : ''}
-    </div>
+    </a>
   `;
 }
 
