@@ -79,3 +79,28 @@ function mettreAJourBadgeCloche() {
 }
 
 document.addEventListener('DOMContentLoaded', mettreAJourBadgeCloche);
+
+// ---- Relais depuis le service worker : quand une notification push arrive
+// pendant que l'app est ouverte (onglet actif ou en arrière-plan), sw.js nous
+// prévient via postMessage. On l'ajoute alors à la liste locale, sinon elle
+// s'affichait sur l'appareil mais la cloche n'en savait jamais rien. ----
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.addEventListener('message', (evenement) => {
+    if (!evenement.data || evenement.data.type !== 'clearway-notification-push') return;
+
+    ajouterNotificationLocale({
+      titre: evenement.data.titre || 'Nouvelle alerte',
+      message: evenement.data.message || '',
+    });
+
+    mettreAJourBadgeCloche();
+
+    // Si le panneau de notifications est déjà ouvert, on le rafraîchit tout
+    // de suite (ces fonctions sont définies dans notifications.js, chargé
+    // après ce fichier, mais ce code ne s'exécute qu'au moment du message).
+    if (typeof panneauNotifications !== 'undefined' && !panneauNotifications.hidden
+      && typeof rendreListeNotifications === 'function') {
+      rendreListeNotifications();
+    }
+  });
+}

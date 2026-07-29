@@ -138,7 +138,24 @@ self.addEventListener('push', (evenement) => {
   };
 
   evenement.waitUntil(
-    self.registration.showNotification(donnees.titre, options)
+    (async () => {
+      // Affiche la notification système (fonctionnait déjà)
+      await self.registration.showNotification(donnees.titre, options);
+
+      // NOUVEAU : prévient toutes les pages/onglets ouverts de l'app pour
+      // qu'ils ajoutent aussi cette alerte à la liste locale de la cloche.
+      // Sans ça, la notification s'affichait bien sur l'appareil mais
+      // n'était jamais enregistrée dans localStorage (inaccessible depuis
+      // le service worker), donc la cloche ne la voyait jamais.
+      const clientsOuverts = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+      clientsOuverts.forEach((client) => {
+        client.postMessage({
+          type: 'clearway-notification-push',
+          titre: donnees.titre,
+          message: donnees.message,
+        });
+      });
+    })()
   );
 });
 
