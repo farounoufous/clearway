@@ -16,7 +16,7 @@ const CLE_THEME = 'clearway_theme';
 function themeActuellementAffiche() {
   const force = localStorage.getItem(CLE_THEME);
   if (force === 'dark' || force === 'light') return force;
-  return window.matchMedia('(prefers-color-scheme: light)').matches ? 'dark' : 'light';
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 }
 
 function mettreAJourBoutonTheme() {
