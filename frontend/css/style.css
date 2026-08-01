@@ -1,6 +1,8 @@
+
 /* ============================================
    ClearWay Bénin - Style global
    ============================================ */
+
 :root {
   --bleu-fonce: #0f3460;
   --bleu-fonce-hover: #0c2a4d;
@@ -196,20 +198,28 @@ body {
   border: none;
   cursor: pointer;
   margin-bottom: 12px;
+  transition: background-color 0.18s ease, color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, transform 0.12s ease;
 }
 
 .btn-principal { background: var(--bleu-fonce); color: var(--blanc); }
 .btn-principal:hover { background: var(--bleu-fonce-hover); }
+.btn-principal:active { transform: scale(0.97); }
 
 .btn-secondaire {
   background: var(--blanc);
   color: var(--bleu-fonce);
   border: 2px solid var(--bleu-fonce);
 }
-.btn-secondaire :hover {
-  background: var(--rouge);
+
+.btn-secondaire:hover {
+  background: var(--bleu-fonce);
   color: var(--blanc);
-  border: 2px solid var(--bleu-fonce);
+  box-shadow: 0 4px 12px rgba(15, 52, 96, 0.25);
+}
+
+.btn-secondaire:active {
+  transform: scale(0.97);
+  box-shadow: none;
 }
 
 .btn-rouge { background: var(--rouge); color: var(--blanc); }
@@ -218,6 +228,17 @@ body {
   background: var(--blanc);
   color: var(--bleu-fonce);
   border: 2px solid var(--bleu-fonce);
+}
+
+.btn-bleu-contour:hover {
+  background: var(--bleu-fonce);
+  color: var(--blanc);
+  box-shadow: 0 4px 12px rgba(15, 52, 96, 0.25);
+}
+
+.btn-bleu-contour:active {
+  transform: scale(0.97);
+  box-shadow: none;
 }
 
 .btn:disabled {
