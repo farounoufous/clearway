@@ -206,6 +206,11 @@ body {
   color: var(--bleu-fonce);
   border: 2px solid var(--bleu-fonce);
 }
+.btn-secondaire :hover {
+  background: var(--rouge);
+  color: var(--blanc);
+  border: 2px solid var(--bleu-fonce);
+}
 
 .btn-rouge { background: var(--rouge); color: var(--blanc); }
 
