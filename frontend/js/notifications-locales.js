@@ -1,5 +1,5 @@
 const CLE_NOTIFICATIONS_LOCALES = 'clearway_notifications_locales';
-const CLE_IDS_CONNUS = 'clearway_ids_connus';
+const CLE_DERNIER_ID_VU = 'clearway_dernier_id_vu'; // remplace l'ancien CLE_IDS_CONNUS (ensemble d'IDs, peu fiable)
 const MAX_NOTIFICATIONS = 30;
 
 function listerNotificationsLocales() {
@@ -39,17 +39,34 @@ function marquerNotificationsCommeLues() {
   }
 }
 
-// ---- Détecte les nouveaux signalements en comparant avec les IDs déjà vus lors du dernier appel ----
+// ---- Détecte les nouveaux signalements en comparant à l'ID le plus élevé déjà vu ----
+//
+// Avant : on comparait l'ensemble des 3 derniers IDs vus à l'ensemble des 3
+// derniers IDs actuels (accueil.php ne renvoie que les 3 derniers
+// signalements). Problème : dès que plus de 3 signalements arrivaient entre
+// deux vérifications, ou que l'ordre changeait un peu vite, la comparaison
+// d'ensembles perdait le fil et ne détectait plus rien de façon fiable.
+//
+// Maintenant : on retient uniquement le plus grand ID déjà vu. Tout
+// signalement avec un ID supérieur est forcément nouveau, peu importe
+// combien il y en a eu entre deux vérifications — beaucoup plus robuste
+// qu'une comparaison d'ensembles sur une fenêtre limitée à 3 éléments.
 function detecterNouveauxSignalements(signalements) {
-  let idsConnus = [];
-  try {
-    idsConnus = JSON.parse(localStorage.getItem(CLE_IDS_CONNUS)) || [];
-  } catch {
-    idsConnus = [];
+  if (!signalements || signalements.length === 0) return;
+
+  const dernierIdVuBrut = localStorage.getItem(CLE_DERNIER_ID_VU);
+  const dernierIdVu = dernierIdVuBrut !== null ? parseInt(dernierIdVuBrut, 10) : null;
+
+  const idMaxActuel = Math.max(...signalements.map(s => s.id));
+
+  // Première visite jamais faite sur cet appareil : on mémorise juste la
+  // référence de départ, sans notifier pour des signalements déjà existants
+  if (dernierIdVu === null || Number.isNaN(dernierIdVu)) {
+    localStorage.setItem(CLE_DERNIER_ID_VU, String(idMaxActuel));
+    return;
   }
 
-  const idsActuels = signalements.map(s => s.id);
-  const nouveaux = signalements.filter(s => idsConnus.length > 0 && !idsConnus.includes(s.id));
+  const nouveaux = signalements.filter(s => s.id > dernierIdVu);
 
   nouveaux.forEach(s => {
     ajouterNotificationLocale({
@@ -58,7 +75,9 @@ function detecterNouveauxSignalements(signalements) {
     });
   });
 
-  localStorage.setItem(CLE_IDS_CONNUS, JSON.stringify(idsActuels.slice(0, 50)));
+  if (idMaxActuel > dernierIdVu) {
+    localStorage.setItem(CLE_DERNIER_ID_VU, String(idMaxActuel));
+  }
 
   if (nouveaux.length > 0) {
     mettreAJourBadgeCloche();
