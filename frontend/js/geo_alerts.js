@@ -29,6 +29,9 @@ function afficherMessage(conteneur, message) {
 
 function construireCarteAlerte(incident) {
   const distanceTexte = `à ${incident.distance_km.toFixed(1).replace('.', ',')} km`;
+  const badgeIncertain = incident.confiance === 'incertain'
+    ? '<span class="badge-incertain">Non confirmé</span>'
+    : '';
 
   // Utilisation de la classe maîtresse '.carte-voie' pour calquer le design de l'accueil, les effets de survol et le pointeur.
   return `
@@ -36,6 +39,7 @@ function construireCarteAlerte(incident) {
       <div class="nom-zone">
         ${incident.zone} 
         <span class="badge-nouveau" style="margin-left: 8px;">Proche (${distanceTexte})</span>
+        ${badgeIncertain}
       </div>
       <div class="info">Obstacle : ${incident.type_obstacle}</div>
       ${incident.description ? `<div class="info" style="opacity: 0.8; font-style: italic; margin-top: 4px;">"${incident.description}"</div>` : ''}

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Vérifier mon trajet - ClearWay Bénin</title>
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" href="icone-32.png" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="icone-180.png">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f3460">
+<link rel="stylesheet" href="css/style.css">
+
+<!-- Leaflet (CDN, version stable) -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+
+<script src="js/theme.js"></script>
+</head>
+<body>
+
+<div class="ecran">
+  <div class="header header-nav">
+    <a href="index.html" aria-label="Retour">&#8592;</a>
+    <h1>Vérifier mon trajet</h1>
+  </div>
+
+  <div class="itineraire-formulaire">
+    <div class="itineraire-champ depart">
+      <span class="pastille-point"></span>
+      <span class="texte" id="texte-depart">Choisis ton point de départ</span>
+      <button type="button" id="btn-ma-position">Ma position</button>
+    </div>
+    <div class="itineraire-champ arrivee">
+      <span class="pastille-point"></span>
+      <span class="texte" id="texte-arrivee">Choisis ta destination</span>
+      <button type="button" id="btn-effacer" hidden>Recommencer</button>
+    </div>
+  </div>
+
+  <p class="itineraire-aide" id="itineraire-aide">
+    Touche la carte une première fois pour placer le <strong>départ</strong>, une deuxième fois pour la <strong>destination</strong>.
+  </p>
+
+  <div class="itineraire-conteneur-carte">
+    <div id="carte-itineraire" role="application" aria-label="Carte pour choisir le départ et la destination"></div>
+  </div>
+
+  <button type="button" id="btn-verifier" class="btn btn-principal" style="margin: 16px 20px 0;" disabled>
+    Vérifier ce trajet
+  </button>
+
+  <div class="itineraire-resultats" id="itineraire-resultats"></div>
+</div>
+
+<!-- Leaflet (JS, après le DOM) -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+<script src="js/sw-register.js"></script>
+<script src="js/itineraire.js"></script>
+</body>
+</html>

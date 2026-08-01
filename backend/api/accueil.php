@@ -20,25 +20,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 header('Content-Type: application/json; charset=utf-8');
 require_once dirname(__DIR__) . '/config/db.php';
 
-
-
-// Nombre de voies bloquées = signalements actifs, gravité sévère ou modérée (hors "Praticable")
+// Nombre de voies bloquées = signalements actifs ou incertains, gravité sévère ou modérée (hors "Praticable")
+// (les "incertains" restent comptés : ils sont toujours potentiellement bloquants, juste non reconfirmés)
 $nbBloquees = $pdo->query(
-    "SELECT COUNT(*) AS total FROM signalements WHERE statut = 'actif' AND gravite IN ('Severe','Modere')"
+    "SELECT COUNT(*) AS total FROM signalements WHERE statut IN ('actif', 'incertain') AND gravite IN ('Severe','Modere')"
 )->fetch()['total'];
 
-// Nombre total de signalements actifs
+// Nombre total de signalements actifs ou incertains
 $nbActifs = $pdo->query(
-    "SELECT COUNT(*) AS total FROM signalements WHERE statut = 'actif'"
+    "SELECT COUNT(*) AS total FROM signalements WHERE statut IN ('actif', 'incertain')"
 )->fetch()['total'];
 
 // 3 derniers signalements
 $sql = "
-    SELECT s.id, s.type_obstacle, s.gravite, s.date_creation, s.description, s.valide,
+    SELECT s.id, s.type_obstacle, s.gravite, s.date_creation, s.description, s.valide, s.statut,
            s.latitude, s.longitude, s.pays, s.ville, s.quartier,
            (SELECT COUNT(DISTINCT COALESCE(visiteur_id, ip_utilisateur)) FROM confirmations c WHERE c.signalement_id = s.id AND c.type_confirmation = 'toujours_bloquee') AS nb_confirmations
     FROM signalements s
-    WHERE s.statut = 'actif'
+    WHERE s.statut IN ('actif', 'incertain')
     ORDER BY s.date_creation DESC
     LIMIT 3
 ";
@@ -103,6 +102,15 @@ function formaterDateHeure($date) {
     return "{$jour} {$moisTexte} à {$heure}";
 }
 
+// Même règle de confiance que voies.php / confirmation.php (cf. ces fichiers
+// pour le détail) : 'validee' > 'confirmee_partiellement' > 'incertain' > 'recente'
+function confiance($s) {
+    if ((bool) $s['valide']) return 'validee';
+    if ((int) $s['nb_confirmations'] > 0) return 'confirmee_partiellement';
+    if ($s['statut'] === 'incertain') return 'incertain';
+    return 'recente';
+}
+
 $signalements = array_map(function ($s) {
     // "Nouveau" = signalement créé il y a moins de 30 minutes
     $minutesEcoulees = (time() - strtotime($s['date_creation'])) / 60;
@@ -115,6 +123,7 @@ $signalements = array_map(function ($s) {
         'gravite_classe' => graviteClasse($s['gravite']),
         'gravite_label' => graviteLabel($s['gravite']),
         'valide' => (bool) $s['valide'],
+        'confiance' => confiance($s),
         'nb_confirmations' => (int) $s['nb_confirmations'],
         'date_heure' => formaterDateHeure($s['date_creation']),
         'description_apercu' => tronquerDescription($s['description']),

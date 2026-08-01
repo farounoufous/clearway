@@ -49,6 +49,7 @@ async function chargerAccueil(rafraichissementSilencieux = false) {
       return `
       <a href="confirmation.html?id=${s.id}" class="carte-signalement-accueil ${s.gravite_classe}" data-id="${s.id}">
         ${afficherBadge ? '<span class="badge-nouveau badge-nouveau-carte">Nouveau</span>' : ''}
+        ${s.confiance === 'incertain' ? '<span class="badge-incertain">Non confirmé</span>' : ''}
         <div class="carte-signalement-tete">
           <span class="pastille-gravite ${s.gravite_classe}"></span>
           <span class="carte-signalement-gravite">${s.gravite_label}</span>

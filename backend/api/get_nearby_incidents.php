@@ -110,6 +110,11 @@ $sql = "
         s.quartier,
         s.adresse_formatee,
         s.date_creation,
+        s.statut,
+        s.valide,
+        (SELECT COUNT(DISTINCT COALESCE(c.visiteur_id, c.ip_utilisateur))
+           FROM confirmations c
+          WHERE c.signalement_id = s.id AND c.type_confirmation = 'toujours_bloquee') AS nb_confirmations,
         (
             6371 * ACOS(
                 COS(RADIANS(:lat1)) * COS(RADIANS(s.latitude)) *
@@ -118,7 +123,7 @@ $sql = "
             )
         ) AS distance_km
     FROM signalements s
-    WHERE s.statut = 'actif'
+    WHERE s.statut IN ('actif', 'incertain')
       AND s.latitude IS NOT NULL
       AND s.longitude IS NOT NULL
     HAVING distance_km <= :rayon
@@ -171,7 +176,15 @@ $graviteClasse = function ($gravite) {
         };
     };
 
-    $incidents = array_map(function ($s) use ($libelleZone, $graviteClasse, $graviteLabel) {
+    // Même règle de confiance que voies.php / confirmation.php
+    $confiance = function ($s) {
+        if ((bool) $s['valide']) return 'validee';
+        if ((int) $s['nb_confirmations'] > 0) return 'confirmee_partiellement';
+        if ($s['statut'] === 'incertain') return 'incertain';
+        return 'recente';
+    };
+
+    $incidents = array_map(function ($s) use ($libelleZone, $graviteClasse, $graviteLabel, $confiance) {
         return [
             'id' => (int) $s['id'],
             'zone' => $libelleZone($s),
@@ -179,6 +192,7 @@ $graviteClasse = function ($gravite) {
             'gravite_classe' => $graviteClasse($s['gravite']),
             'gravite_label' => $graviteLabel($s['gravite']),
             'description' => $s['description'],
+            'confiance' => $confiance($s),
             'latitude' => (float) $s['latitude'],
             'longitude' => (float) $s['longitude'],
             // Distance arrondie à 1 décimale, ex: 1.2 (km)

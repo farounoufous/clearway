@@ -34,7 +34,7 @@ $sql = "
            s.latitude, s.longitude, s.pays, s.ville, s.quartier, s.adresse_formatee,
            (SELECT COUNT(DISTINCT COALESCE(visiteur_id, ip_utilisateur)) FROM confirmations c WHERE c.signalement_id = s.id AND c.type_confirmation = 'toujours_bloquee') AS nb_confirmations
     FROM signalements s
-    WHERE s.id IN ($placeholders) AND s.statut = 'actif'
+    WHERE s.id IN ($placeholders) AND s.statut IN ('actif', 'incertain')
     ORDER BY s.date_creation DESC
 ";
 $stmt = $pdo->prepare($sql);
@@ -62,6 +62,14 @@ function dateLisible($date) {
     return date('d/m/Y à H\hi', strtotime($date));
 }
 
+// Même règle de confiance que voies.php / confirmation.php
+function confiance($s) {
+    if ((bool) $s['valide']) return 'validee';
+    if ((int) $s['nb_confirmations'] > 0) return 'confirmee_partiellement';
+    if ($s['statut'] === 'incertain') return 'incertain';
+    return 'recente';
+}
+
 // Libellé de secours : quartier > ville > pays > coordonnées brutes
 function libelleZone($s) {
     if (!empty($s['quartier'])) return $s['quartier'];
@@ -83,6 +91,7 @@ $resultats = array_map(function ($s) use ($origineBackend) {
         'gravite_label' => graviteLabel($s['gravite']),
         'statut' => $s['statut'],
         'valide' => (bool) $s['valide'],
+        'confiance' => confiance($s),
         'nb_confirmations' => (int) $s['nb_confirmations'],
         'date_creation' => dateLisible($s['date_creation']),
         'photo' => $s['photo'] ? $origineBackend . '/uploads/' . $s['photo'] : null,

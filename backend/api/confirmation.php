@@ -35,6 +35,18 @@ function graviteLabel($gravite) {
     };
 }
 
+// Niveau de confiance affiché à l'utilisateur (même règle que voies.php) :
+//  - 'validee'                : seuil de 3 confirmations atteint, ne s'archive plus jamais
+//  - 'confirmee_partiellement': au moins 1 confirmation, en cours de consolidation
+//  - 'incertain'               : aucune confirmation depuis 90 min, fiabilité à prendre avec réserve
+//  - 'recente'                 : signalement frais, pas encore eu le temps d'être confirmé
+function confiance($statut, $valide, $nbConfirmations) {
+    if ($valide) return 'validee';
+    if ($nbConfirmations > 0) return 'confirmee_partiellement';
+    if ($statut === 'incertain') return 'incertain';
+    return 'recente';
+}
+
 // Libellé de secours : quartier > ville > pays > coordonnées brutes
 function libelleZone($s) {
     if (!empty($s['quartier'])) return $s['quartier'];
@@ -138,6 +150,7 @@ if ($methode === 'GET') {
         'gravite_label' => graviteLabel($s['gravite']),
         'statut' => $s['statut'],
         'valide' => $estValide,
+        'confiance' => confiance($s['statut'], $estValide, $nbBloquees),
         'nb_confirmations' => $nbBloquees,
         'seuil_validation' => SEUIL_CONFIRMATIONS_VALIDATION,
         'nb_degagees' => $nbDegagees,
@@ -191,7 +204,7 @@ if ($methode === 'POST') {
         echo json_encode(['erreur' => 'Signalement introuvable.']);
         exit;
     }
-    if ($signalement['statut'] !== 'actif') {
+    if (!in_array($signalement['statut'], ['actif', 'incertain'], true)) {
         http_response_code(410);
         echo json_encode(['erreur' => 'Ce signalement a déjà été archivé.']);
         exit;
@@ -317,10 +330,14 @@ if ($methode === 'POST') {
     }
 
     if ($action === 'toujours_bloquee') {
-        // Réinitialise le compte à rebours de 3h (utile tant que le signalement
-        // n'est pas encore validé par la communauté)
-        $pdo->prepare("UPDATE signalements SET derniere_confirmation = NOW() WHERE id = ?")
-            ->execute([$signalementId]);
+        // Réinitialise le compte à rebours (utile tant que le signalement
+        // n'est pas encore validé par la communauté), et fait sortir le
+        // signalement de l'état 'incertain' puisqu'il vient d'être reconfirmé
+        $pdo->prepare("
+            UPDATE signalements
+            SET derniere_confirmation = NOW(), statut = 'actif'
+            WHERE id = ? AND statut IN ('actif', 'incertain')
+        ")->execute([$signalementId]);
 
         $nbBloquees = compterConfirmationsBloqueesDistinctes($pdo, (int) $signalementId);
         marquerValideSiSeuilAtteint($pdo, (int) $signalementId);

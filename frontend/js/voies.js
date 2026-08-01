@@ -58,7 +58,7 @@ function afficherVoies(voies) {
     return `
     <a href="confirmation.html?id=${v.id}" class="carte-voie ${v.gravite_classe}" data-id="${v.id}">
       ${v.photo ? `<img src="${v.photo}" class="photo-signalement" alt="Photo du dégât">` : ''}
-      <div class="nom-zone">${v.zone}${afficherBadge ? '<span class="badge-nouveau">Nouveau</span>' : ''}${v.recemment_degagee ? '<span class="badge-degagee">Récemment dégagée</span>' : ''}</div>
+      <div class="nom-zone">${v.zone}${afficherBadge ? '<span class="badge-nouveau">Nouveau</span>' : ''}${v.recemment_degagee ? '<span class="badge-degagee">Récemment dégagée</span>' : ''}${v.confiance === 'incertain' ? '<span class="badge-incertain">Non confirmé</span>' : ''}</div>
       <div class="info">Obstacle : ${v.gravite_label}</div>
       <div class="info">Confirmation ${v.nb_confirmations}${v.valide ? ', validée par la communauté' : ''}</div>
       ${miniBarre}

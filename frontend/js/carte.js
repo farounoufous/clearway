@@ -77,10 +77,15 @@ function construirePopup(item, couleur) {
     ? `depuis ${item.depuis}`
     : (item.il_y_a || '');
 
+  const avertissementIncertain = item.confiance === 'incertain'
+    ? '<div class="popup-avertissement">⚠ Non reconfirmé depuis un moment — fiabilité incertaine</div>'
+    : '';
+
   return `
     <div class="popup-carte">
       <div class="popup-zone">${item.zone}</div>
       <div class="popup-statut"><strong>${libellesStatut[couleur]}</strong>${texteTemps ? ` ${texteTemps}` : ''}</div>
+      ${avertissementIncertain}
       <div class="popup-actions">
         <a href="${lienMaps}" target="_blank" rel="noopener" class="btn-popup-principal">Ouvrir dans Google Maps</a>
         ${boutonDegage}

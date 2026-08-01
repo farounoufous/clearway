@@ -37,7 +37,7 @@ async function chargerMesSignalements() {
     listeEl.innerHTML = signalements.map(s => `
       <a href="confirmation.html?id=${s.id}" class="carte-voie ${s.gravite_classe}">
         ${s.photo ? `<img src="${s.photo}" class="photo-signalement" alt="Photo du dégât">` : ''}
-        <div class="nom-zone">${s.zone}</div>
+        <div class="nom-zone">${s.zone}${s.confiance === 'incertain' ? '<span class="badge-incertain">Non confirmé</span>' : ''}</div>
         <div class="info">Obstacle : ${s.gravite_label} · ${s.type_obstacle}</div>
         <div class="info">Confirmations : ${s.nb_confirmations}</div>
         <div class="info">Signalé le ${s.date_creation}</div>

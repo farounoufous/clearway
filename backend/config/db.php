@@ -144,3 +144,18 @@ try {
 } catch (\Throwable $e) {
     error_log('Auto-réparation schéma (géolocalisation push_subscriptions) impossible : ' . $e->getMessage());
 }
+
+// ---- Ajout de la valeur 'incertain' à l'ENUM statut ----
+// Nouvelle règle de fiabilité graduée (cf. voies.php) : un signalement sans
+// aucune confirmation bascule d'abord en 'incertain' (toujours visible, mais
+// affiché comme non confirmé) avant d'être archivé, au lieu de disparaître
+// directement. Vérifie le type de la colonne pour ne lancer l'ALTER qu'une
+// seule fois (les appels suivants voient déjà 'incertain' dans le Type).
+try {
+    $colonneStatut = $pdo->query("SHOW COLUMNS FROM signalements LIKE 'statut'")->fetch();
+    if ($colonneStatut && stripos($colonneStatut['Type'], "'incertain'") === false) {
+        $pdo->exec("ALTER TABLE signalements MODIFY COLUMN statut ENUM('actif','incertain','archive') NOT NULL DEFAULT 'actif'");
+    }
+} catch (\Throwable $e) {
+    error_log("Auto-réparation schéma (statut 'incertain') impossible : " . $e->getMessage());
+}

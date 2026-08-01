@@ -100,11 +100,16 @@ function afficherContenu(details) {
   const votes = recupererVotes(signalementId);
   const seuilAtteint = details.nb_degagees >= details.seuil_degagees;
 
+  const bandeauIncertain = details.confiance === 'incertain'
+    ? `<div class="bandeau-incertain"><span class="icone-inline">${ICONE_INFO}</span>Personne n'a reconfirmé ce signalement depuis un moment : sa fiabilité est incertaine. Si tu passes par ici, dis-nous si c'est toujours bloqué.</div>`
+    : '';
+
   // ---- Cas particulier : le seuil est déjà atteint -> on remplace les boutons
   // de vote par un unique bouton de confirmation finale explicite ----
   if (seuilAtteint) {
     zoneContenu.innerHTML = `
       ${details.photo ? `<img src="${details.photo}" class="photo-signalement" alt="Photo du dégât">` : ''}
+      ${bandeauIncertain}
       <div class="boite-confirmation">
         ${details.nb_confirmations} personnes ont confirmé
         <div class="sous-titre">${details.zone} · Obstacle ${details.gravite_label}</div>
@@ -129,6 +134,7 @@ function afficherContenu(details) {
 
   zoneContenu.innerHTML = `
     ${details.photo ? `<img src="${details.photo}" class="photo-signalement" alt="Photo du dégât">` : ''}
+    ${bandeauIncertain}
     <div class="boite-confirmation">
       ${details.nb_confirmations} personnes ont confirmé
       <div class="sous-titre">${details.zone} · Obstacle ${details.gravite_label}</div>
@@ -201,7 +207,7 @@ async function chargerDetails() {
       return;
     }
 
-    if (details.statut !== 'actif') {
+    if (details.statut !== 'actif' && details.statut !== 'incertain') {
       zoneContenu.innerHTML = '<p class="etat-vide">Ce signalement a déjà été archivé.</p>';
       return;
     }

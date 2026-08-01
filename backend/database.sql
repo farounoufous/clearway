@@ -10,8 +10,15 @@
 --
 -- Règle "validation communautaire" : dès que 3 VISITEURS DIFFÉRENTS ont
 -- confirmé "toujours_bloquee", `valide` passe à 1. Un signalement validé
--- n'est plus jamais archivé automatiquement après 3h : il ne disparaît que
--- si la communauté le confirme "dégagé".
+-- n'est plus jamais archivé automatiquement : il ne disparaît que si la
+-- communauté le confirme "dégagé".
+--
+-- Règle de fiabilité graduée (statut 'incertain') : un signalement sans
+-- AUCUNE confirmation "toujours_bloquee" depuis 90 min bascule en statut
+-- 'incertain' -- il reste affiché (avec un badge "non confirmé") au lieu de
+-- disparaître d'un coup. La fenêtre avant archivage définitif s'allonge de
+-- 3h à chaque confirmation distincte reçue (0 confirmation -> 3h, 1 -> 6h,
+-- 2 -> 9h), au lieu d'un seuil fixe unique. Voir backend/api/voies.php.
 --
 -- Localisation : latitude/longitude sont la donnée de référence (obligatoire
 -- en pratique, imposé côté API). pays/ville/quartier/adresse_formatee sont
@@ -33,7 +40,7 @@ CREATE TABLE IF NOT EXISTS signalements (
     quartier VARCHAR(150) NULL,
     adresse_formatee VARCHAR(255) NULL,
     photo VARCHAR(255) NULL,
-    statut ENUM('actif', 'archive') NOT NULL DEFAULT 'actif',
+    statut ENUM('actif', 'incertain', 'archive') NOT NULL DEFAULT 'actif',
     valide TINYINT(1) NOT NULL DEFAULT 0,
     date_creation DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     derniere_confirmation DATETIME NULL,
