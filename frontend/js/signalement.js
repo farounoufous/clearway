@@ -79,21 +79,72 @@ selectTypeObstacle.addEventListener('change', () => {
   if (!estAutre) champTypePersonnalise.value = '';
 });
 
-// ---- 2bis. Aperçu de la photo sélectionnée ----
-champPhoto.addEventListener('change', () => {
+// ---- 2bis. Compression + aperçu de la photo sélectionnée ----
+//
+// Les photos de smartphone modernes pèsent 3-8 Mo. Sur une connexion mobile
+// limitée (contexte courant à Cotonou/Abomey-Calavi), forcer l'envoi de ça
+// pour signaler une route inondée est un vrai frein à l'usage, surtout dans
+// l'urgence. On redimensionne et recompresse via <canvas> avant l'envoi :
+// ~1280px de large et qualité JPEG 0.72 suffisent largement pour identifier
+// un obstacle sur une photo, et ça fait passer le poids à 100-300 Ko.
+let photoAEnvoyer = null; // fichier réellement envoyé au serveur (compressé, ou original si la compression échoue)
+
+function compresserImage(fichier, largeurMax = 1280, qualite = 0.72) {
+  return new Promise((resolve) => {
+    const url = URL.createObjectURL(fichier);
+    const img = new Image();
+
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+
+      // On ne réduit jamais une image déjà plus petite que la largeur max
+      const ratio = Math.min(1, largeurMax / img.width);
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(img.width * ratio);
+      canvas.height = Math.round(img.height * ratio);
+
+      const contexte = canvas.getContext('2d');
+      contexte.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+      canvas.toBlob((blob) => {
+        if (blob) {
+          resolve(new File([blob], 'signalement.jpg', { type: 'image/jpeg' }));
+        } else {
+          resolve(fichier); // échec de l'encodage -> on envoie l'original plutôt que de bloquer l'utilisateur
+        }
+      }, 'image/jpeg', qualite);
+    };
+
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      resolve(fichier); // fichier illisible comme image -> laissé tel quel, la validation serveur tranchera
+    };
+
+    img.src = url;
+  });
+}
+
+champPhoto.addEventListener('change', async () => {
   apercuPhoto.innerHTML = '';
+  photoAEnvoyer = null;
   const fichier = champPhoto.files[0];
   if (!fichier) return;
 
-  const tailleMaxOctets = 2 * 1024 * 1024; // 2 Mo
+  // Limite d'entrée plus large qu'avant : la compression se charge de ramener
+  // ça à une taille raisonnable, pas la peine de bloquer une photo un peu lourde
+  const tailleMaxOctets = 10 * 1024 * 1024; // 10 Mo
   if (fichier.size > tailleMaxOctets) {
-    afficherMessage('La photo est trop lourde (max 2 Mo).', 'erreur');
+    afficherMessage('La photo est trop lourde (max 10 Mo).', 'erreur');
     champPhoto.value = '';
     return;
   }
 
+  afficherMessage('Compression de la photo...', 'info');
+  photoAEnvoyer = await compresserImage(fichier);
+  messageZone.innerHTML = '';
+
   const img = document.createElement('img');
-  img.src = URL.createObjectURL(fichier);
+  img.src = URL.createObjectURL(photoAEnvoyer);
   apercuPhoto.appendChild(img);
 });
 
@@ -381,6 +432,59 @@ function afficherMessage(texte, type) {
   messageZone.innerHTML = `<div class="message-etat ${type}">${texte}</div>`;
 }
 
+// ---- 7ter. Vérification des doublons possibles avant l'envoi (Option B) ----
+// On ne fusionne JAMAIS automatiquement : on propose juste à l'utilisateur
+// de confirmer un signalement existant proche, ou de continuer le sien s'il
+// juge que c'est vraiment un problème différent.
+let ignorerVerificationDoublon = false;
+
+async function chercherDoublonsPossibles(latitude, longitude) {
+  try {
+    const url = `${window.API_BASE}/verifier_proximite.php?lat=${encodeURIComponent(latitude)}&lng=${encodeURIComponent(longitude)}`;
+    const reponse = await fetch(url);
+    if (!reponse.ok) return [];
+    const donnees = await reponse.json();
+    return donnees.doublons_possibles || [];
+  } catch (erreur) {
+    console.error('Vérification des doublons impossible (on continue quand même) :', erreur);
+    return []; // en cas d'erreur réseau, on n'empêche pas l'utilisateur de signaler
+  }
+}
+
+function afficherChoixDoublon(doublons) {
+  const plusProche = doublons[0];
+  const distanceTexte = plusProche.distance_m < 1
+    ? 'au même endroit'
+    : `à environ ${plusProche.distance_m} m`;
+  const nonConfirme = plusProche.confiance === 'incertain'
+    ? '<span class="badge-incertain">Non confirmé</span>'
+    : '';
+
+  messageZone.innerHTML = `
+    <div class="carte-doublon-possible">
+      <p class="carte-doublon-titre">Un signalement existe déjà ${distanceTexte}</p>
+      <p class="carte-doublon-detail">
+        ${plusProche.zone} — ${plusProche.type_obstacle.toLowerCase()} ${plusProche.gravite_label}, créé il y a ${plusProche.depuis} ${nonConfirme}
+      </p>
+      <p class="carte-doublon-question">Est-ce le même problème que celui que tu veux signaler ?</p>
+      <div class="carte-doublon-actions">
+        <button type="button" class="btn btn-principal" id="btn-confirmer-existant">Oui, confirmer celui-ci</button>
+        <button type="button" class="btn btn-secondaire" id="btn-probleme-different">Non, c'est différent</button>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('btn-confirmer-existant').addEventListener('click', () => {
+    window.location.href = `confirmation.html?id=${plusProche.id}`;
+  });
+
+  document.getElementById('btn-probleme-different').addEventListener('click', () => {
+    ignorerVerificationDoublon = true;
+    messageZone.innerHTML = '';
+    form.requestSubmit();
+  });
+}
+
 // ---- 7bis. Mémorise ce signalement comme étant "le mien" (écran "Mes signalements") ----
 // Pas de compte utilisateur : on garde juste l'ID dans le navigateur
 const CLE_MES_SIGNALEMENTS = 'clearway_mes_signalements';
@@ -411,6 +515,21 @@ form.addEventListener('submit', async (evenement) => {
     champQuartier.value = champQuartierManuel.value.trim();
   }
 
+  // ---- Vérification des doublons possibles (une seule fois par tentative) ----
+  if (!ignorerVerificationDoublon) {
+    btnEnvoyer.disabled = true;
+    btnEnvoyer.textContent = 'Vérification...';
+    const doublons = await chercherDoublonsPossibles(position.latitude, position.longitude);
+    btnEnvoyer.disabled = false;
+    btnEnvoyer.textContent = 'Envoyer le signalement';
+
+    if (doublons.length > 0) {
+      afficherChoixDoublon(doublons);
+      return; // on attend le choix de l'utilisateur (cf. afficherChoixDoublon)
+    }
+  }
+  ignorerVerificationDoublon = false; // reset pour la prochaine fois
+
   const donnees = new FormData();
   donnees.append('type_obstacle', document.getElementById('type-obstacle').value);
   donnees.append('type_obstacle_personnalise', champTypePersonnalise.value.trim());
@@ -424,8 +543,8 @@ form.addEventListener('submit', async (evenement) => {
   donnees.append('ville', champVille.value);
   donnees.append('quartier', champQuartier.value);
   donnees.append('adresse_formatee', champAdresseFormatee.value);
-  if (champPhoto.files[0]) {
-    donnees.append('photo', champPhoto.files[0]);
+  if (photoAEnvoyer) {
+    donnees.append('photo', photoAEnvoyer);
   }
 
   btnEnvoyer.disabled = true;
@@ -448,6 +567,7 @@ form.addEventListener('submit', async (evenement) => {
     if (resultat.id) marquerCommeMonSignalement(resultat.id);
     form.reset();
     apercuPhoto.innerHTML = '';
+    photoAEnvoyer = null;
     champTypePersonnalise.hidden = true;
     champTypePersonnalise.required = false;
     selecteurGravite.querySelectorAll('button').forEach(b => b.classList.remove('actif'));

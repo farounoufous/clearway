@@ -149,10 +149,20 @@ function afficherContenu(details) {
     <button type="button" class="btn btn-rouge" id="btn-toujours-bloquee">Toujours  bloquée, je confirme</button>
     <button type="button" class="btn btn-bleu-contour" id="btn-voie-degagee">La voie est dégagée</button>
 
+    ${votes.signalement_errone
+      ? '<button type="button" class="lien-discret lien-signaler-errone" disabled>Signalement transmis, merci</button>'
+      : `<button type="button" class="lien-discret lien-signaler-errone" id="btn-signaler-errone">Ce signalement te semble faux ou suspect ? Le signaler (${details.nb_errones}/${details.seuil_errone})</button>`
+    }
+
   `;
 
   const btnToujoursBloquee = document.getElementById('btn-toujours-bloquee');
   const btnVoieDegagee = document.getElementById('btn-voie-degagee');
+  const btnSignalerErrone = document.getElementById('btn-signaler-errone');
+
+  if (btnSignalerErrone) {
+    btnSignalerErrone.addEventListener('click', signalerErrone);
+  }
 
   // ---- Règle 1 : le propriétaire ne peut JAMAIS confirmer "toujours bloquée" sur son propre signalement ----
   if (estProprietaire) {
@@ -265,6 +275,54 @@ async function envoyerAction(action, btnToujoursBloquee, btnVoieDegagee) {
     btnVoieDegagee.disabled = false;
     btnToujoursBloquee.textContent = texteOriginalToujoursBloquee;
     btnVoieDegagee.textContent = texteOriginalVoieDegagee;
+  }
+}
+
+// ---- Signale ce signalement comme faux/suspect/mal placé (seuil bas : 2 avis distincts) ----
+async function signalerErrone() {
+  if (!confirm('Confirmer que ce signalement te semble faux, spam ou mal placé ?')) return;
+
+  const bouton = document.getElementById('btn-signaler-errone');
+  bouton.disabled = true;
+  bouton.textContent = 'Envoi en cours...';
+
+  try {
+    const reponse = await fetch(`${window.API_BASE}/confirmation.php`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        signalement_id: signalementId,
+        action: 'signalement_errone',
+        visiteur_id: obtenirVisiteurId(),
+      }),
+    });
+    const resultat = await reponse.json();
+
+    if (!reponse.ok) {
+      alert(resultat.erreur || 'Une erreur est survenue.');
+      bouton.disabled = false;
+      bouton.textContent = `Ce signalement te semble faux ou suspect ? Le signaler`;
+      return;
+    }
+
+    enregistrerVote(signalementId, 'signalement_errone');
+
+    if (resultat.archive) {
+      zoneContenu.innerHTML = `
+        <div class="boite-confirmation">
+          <span class="icone-inline">${ICONE_INFO}</span>Merci, ce signalement a été retiré suite à plusieurs signalements d'erreur.
+        </div>
+      `;
+      setTimeout(() => { window.location.href = 'voies.html'; }, 1500);
+    } else {
+      chargerDetails(); // recharge l'écran (compteur mis à jour, bouton verrouillé)
+    }
+
+  } catch (erreur) {
+    console.error('Erreur signalement erroné :', erreur);
+    alert('Impossible d\'envoyer ton signalement. Vérifie ta connexion.');
+    bouton.disabled = false;
+    bouton.textContent = `Ce signalement te semble faux ou suspect ? Le signaler`;
   }
 }
 

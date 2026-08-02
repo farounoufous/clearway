@@ -40,6 +40,7 @@ CREATE TABLE IF NOT EXISTS signalements (
     quartier VARCHAR(150) NULL,
     adresse_formatee VARCHAR(255) NULL,
     photo VARCHAR(255) NULL,
+    ip_createur VARCHAR(45) NULL,
     statut ENUM('actif', 'incertain', 'archive') NOT NULL DEFAULT 'actif',
     valide TINYINT(1) NOT NULL DEFAULT 0,
     date_creation DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -51,7 +52,7 @@ CREATE TABLE IF NOT EXISTS signalements (
 CREATE TABLE IF NOT EXISTS confirmations (
     id INT AUTO_INCREMENT PRIMARY KEY,
     signalement_id INT NOT NULL,
-    type_confirmation ENUM('toujours_bloquee', 'voie_degagee') NOT NULL,
+    type_confirmation ENUM('toujours_bloquee', 'voie_degagee', 'signalement_errone') NOT NULL,
     ip_utilisateur VARCHAR(45) NULL,
     visiteur_id VARCHAR(64) NULL,
     date_confirmation DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,

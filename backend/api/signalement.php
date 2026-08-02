@@ -22,6 +22,31 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
+// ---- Anti-spam : limite le nombre de signalements par IP sur 1 heure ----
+// Protège la crédibilité des données (quelqu'un qui inonderait la liste de
+// faux signalements) sans gêner un usage normal (une poignée de signalements
+// légitimes par heure suffit largement, même en cas d'inondation étendue).
+// Limite : basée sur REMOTE_ADDR, donc potentiellement partagée par plusieurs
+// personnes derrière une même IP/NAT/proxy — un compromis assumé pour un MVP
+// sans compte utilisateur.
+const LIMITE_SIGNALEMENTS_PAR_IP_PAR_HEURE = 5;
+
+$ipCreateur = $_SERVER['REMOTE_ADDR'] ?? 'inconnu';
+
+$stmtRateLimit = $pdo->prepare("
+    SELECT COUNT(*) AS total
+    FROM signalements
+    WHERE ip_createur = ? AND date_creation >= NOW() - INTERVAL 1 HOUR
+");
+$stmtRateLimit->execute([$ipCreateur]);
+$nbSignalementsRecents = (int) $stmtRateLimit->fetch()['total'];
+
+if ($nbSignalementsRecents >= LIMITE_SIGNALEMENTS_PAR_IP_PAR_HEURE) {
+    http_response_code(429);
+    echo json_encode(['erreur' => 'Trop de signalements envoyés récemment depuis cette connexion. Réessaie dans un moment.']);
+    exit;
+}
+
 // Les données arrivent en multipart/form-data (FormData côté JS, à cause de la photo)
 $typeObstacle             = $_POST['type_obstacle'] ?? null;
 $typeObstaclePersonnalise = trim($_POST['type_obstacle_personnalise'] ?? '');
@@ -142,9 +167,9 @@ $stmt = $pdo->prepare("
     INSERT INTO signalements (
         type_obstacle, gravite, description,
         latitude, longitude, accuracy, source_position, pays, ville, quartier, adresse_formatee,
-        photo, statut, date_creation
+        photo, ip_createur, statut, date_creation
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'actif', NOW())
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'actif', NOW())
 ");
 $stmt->execute([
     $typeObstacle,
@@ -159,6 +184,7 @@ $stmt->execute([
     $quartier !== '' ? $quartier : null,
     $adresseFormatee !== '' ? $adresseFormatee : null,
     $photoNomFichier,
+    $ipCreateur,
 ]);
 
 $signalementId = (int) $pdo->lastInsertId();

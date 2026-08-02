@@ -145,7 +145,29 @@ try {
     error_log('Auto-réparation schéma (géolocalisation push_subscriptions) impossible : ' . $e->getMessage());
 }
 
-// ---- Ajout de la valeur 'incertain' à l'ENUM statut ----
+// ---- Ajout de la colonne ip_createur (anti-spam signalements) ----
+try {
+    $colonneIpCreateur = $pdo->query("SHOW COLUMNS FROM signalements LIKE 'ip_createur'")->fetch();
+    if (!$colonneIpCreateur) {
+        $pdo->exec("ALTER TABLE signalements ADD COLUMN ip_createur VARCHAR(45) NULL AFTER photo");
+    }
+} catch (\Throwable $e) {
+    error_log("Auto-réparation schéma (ip_createur) impossible : " . $e->getMessage());
+}
+
+// ---- Ajout de la valeur 'signalement_errone' à l'ENUM type_confirmation ----
+// Nouveau type de vote (cf. confirmation.php) : permet à la communauté de
+// signaler un signalement comme faux/suspect/mal placé. Seuil bas (2
+// confirmations distinctes) pour un archivage rapide, distinct du seuil de
+// validation "toujours bloquée" (3).
+try {
+    $colonneTypeConfirmation = $pdo->query("SHOW COLUMNS FROM confirmations LIKE 'type_confirmation'")->fetch();
+    if ($colonneTypeConfirmation && stripos($colonneTypeConfirmation['Type'], "'signalement_errone'") === false) {
+        $pdo->exec("ALTER TABLE confirmations MODIFY COLUMN type_confirmation ENUM('toujours_bloquee','voie_degagee','signalement_errone') NOT NULL");
+    }
+} catch (\Throwable $e) {
+    error_log("Auto-réparation schéma (type_confirmation 'signalement_errone') impossible : " . $e->getMessage());
+}
 // Nouvelle règle de fiabilité graduée (cf. voies.php) : un signalement sans
 // aucune confirmation bascule d'abord en 'incertain' (toujours visible, mais
 // affiché comme non confirmé) avant d'être archivé, au lieu de disparaître

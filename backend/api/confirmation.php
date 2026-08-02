@@ -17,6 +17,10 @@ require_once dirname(__DIR__) . '/config/db.php';
 
 const SEUIL_CONFIRMATIONS_DEGAGEE = 3;
 const SEUIL_CONFIRMATIONS_VALIDATION = 3;
+// Seuil volontairement bas : signaler un contenu faux/suspect doit pouvoir
+// le faire disparaître vite, contrairement à la validation "toujours bloquée"
+// qui demande un vrai consensus (3). Ici, 2 avis suffisent à retirer la voie.
+const SEUIL_SIGNALEMENT_ERRONE = 2;
 
 function graviteClasse($gravite) {
     return match ($gravite) {
@@ -93,6 +97,17 @@ function compterConfirmationsBloqueesDistinctes(PDO $pdo, int $signalementId): i
     return (int) $stmt->fetch()['total'];
 }
 
+// Compte les signalements "erroné/suspect" par VISITEUR distinct
+function compterConfirmationsErroneesDistinctes(PDO $pdo, int $signalementId): int {
+    $stmt = $pdo->prepare("
+        SELECT COUNT(DISTINCT COALESCE(visiteur_id, ip_utilisateur)) AS total
+        FROM confirmations
+        WHERE signalement_id = ? AND type_confirmation = 'signalement_errone'
+    ");
+    $stmt->execute([$signalementId]);
+    return (int) $stmt->fetch()['total'];
+}
+
 // Marque le signalement comme "validé" par la communauté dès que le seuil de
 // confirmations "toujours bloquée" distinctes est atteint. Un signalement
 // validé n'est plus jamais archivé automatiquement après 3h (voir voies.php) :
@@ -140,6 +155,7 @@ if ($methode === 'GET') {
     $estValide = (bool) $s['valide'];
     $nbBloquees = compterConfirmationsBloqueesDistinctes($pdo, (int) $s['id']);
     $nbDegagees = compterConfirmationsDegageeDistinctes($pdo, (int) $s['id']);
+    $nbErrones = compterConfirmationsErroneesDistinctes($pdo, (int) $s['id']);
     $progression = min(100, (int) round($nbDegagees / SEUIL_CONFIRMATIONS_DEGAGEE * 100));
 
     echo json_encode([
@@ -156,6 +172,8 @@ if ($methode === 'GET') {
         'nb_degagees' => $nbDegagees,
         'seuil_degagees' => SEUIL_CONFIRMATIONS_DEGAGEE,
         'seuil_atteint' => $nbDegagees >= SEUIL_CONFIRMATIONS_DEGAGEE,
+        'nb_errones' => $nbErrones,
+        'seuil_errone' => SEUIL_SIGNALEMENT_ERRONE,
         'progression_degagee' => $progression,
         // Une fois validé, le signalement ne s'archive plus jamais tout seul :
         // il n'y a donc plus de compte à rebours à afficher.
@@ -183,7 +201,7 @@ if ($methode === 'POST') {
         echo json_encode(['erreur' => 'Identifiant de signalement invalide.']);
         exit;
     }
-    if (!in_array($action, ['toujours_bloquee', 'voie_degagee', 'confirmer_degagement'], true)) {
+    if (!in_array($action, ['toujours_bloquee', 'voie_degagee', 'confirmer_degagement', 'signalement_errone'], true)) {
         http_response_code(400);
         echo json_encode(['erreur' => 'Action invalide.']);
         exit;
@@ -348,6 +366,30 @@ if ($methode === 'POST') {
             'nb_confirmations' => $nbBloquees,
             'seuil_validation' => SEUIL_CONFIRMATIONS_VALIDATION,
             'valide' => $nbBloquees >= SEUIL_CONFIRMATIONS_VALIDATION,
+        ]);
+        exit;
+    }
+
+    // ---- action === 'signalement_errone' : n'importe qui (y compris l'auteur,
+    // s'il veut retirer son propre signalement erroné) peut signaler que ce
+    // signalement semble faux, spam, ou mal placé. Seuil bas et volontaire :
+    // 2 avis distincts suffisent pour un archivage immédiat, sans attendre le
+    // consensus plus lourd requis pour "toujours bloquée" (3).
+    if ($action === 'signalement_errone') {
+        $nbErrones = compterConfirmationsErroneesDistinctes($pdo, (int) $signalementId);
+        $archive = $nbErrones >= SEUIL_SIGNALEMENT_ERRONE;
+
+        if ($archive) {
+            $pdo->prepare("UPDATE signalements SET statut = 'archive', date_archivage = NOW() WHERE id = ?")
+                ->execute([$signalementId]);
+        }
+
+        echo json_encode([
+            'succes' => true,
+            'action' => $action,
+            'nb_errones' => $nbErrones,
+            'seuil_errone' => SEUIL_SIGNALEMENT_ERRONE,
+            'archive' => $archive,
         ]);
         exit;
     }

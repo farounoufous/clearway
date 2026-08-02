@@ -1,3 +1,4 @@
+
 /* ============================================
    ClearWay Bénin - Style global
    ============================================ */
@@ -366,6 +367,7 @@ body {
 
 .message-etat.succes { background: var(--vert-clair); color: var(--vert); }
 .message-etat.erreur { background: #fdecea; color: var(--rouge); }
+.message-etat.info { background: var(--gris-fond); color: var(--gris-texte); }
 
 /* Icônes SVG inline (remplacent les emojis partout dans l'app) */
 .icone-inline {
@@ -1622,4 +1624,63 @@ body {
   border-radius: 20px;
   margin-left: 8px;
   vertical-align: middle;
+}
+
+/* ============================================
+   Carte "doublon possible" avant l'envoi d'un signalement
+   Cf. backend/api/verifier_proximite.php + frontend/js/signalement.js
+   ============================================ */
+.carte-doublon-possible {
+  background: var(--blanc);
+  border: 1px solid var(--gris-bordure);
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+}
+
+.carte-doublon-titre {
+  font-weight: 700;
+  color: var(--noir-texte);
+  margin: 0 0 6px;
+}
+
+.carte-doublon-detail {
+  font-size: 0.88rem;
+  color: var(--gris-texte);
+  margin: 0 0 8px;
+}
+
+.carte-doublon-question {
+  font-size: 0.9rem;
+  color: var(--noir-texte);
+  margin: 0 0 12px;
+}
+
+.carte-doublon-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.carte-doublon-actions .btn {
+  margin-bottom: 0;
+}
+
+/* ============================================
+   Bouton "Signaler comme erroné" (cf. confirmation.js)
+   Réutilise .lien-discret mais sur un <button>, donc on réinitialise
+   l'apparence native du bouton pour qu'il ressemble à un lien texte.
+   ============================================ */
+.lien-signaler-errone {
+  width: 100%;
+  background: none;
+  border: none;
+  font-family: inherit;
+  cursor: pointer;
+  margin-top: 4px;
+}
+
+.lien-signaler-errone:disabled {
+  cursor: default;
+  color: var(--vert);
 }
