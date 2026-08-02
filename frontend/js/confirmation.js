@@ -280,7 +280,7 @@ async function envoyerAction(action, btnToujoursBloquee, btnVoieDegagee) {
 
 // ---- Signale ce signalement comme faux/suspect/mal placé (seuil bas : 2 avis distincts) ----
 async function signalerErrone() {
-  if (!confirm('Confirmer que ce signalement te semble faux, spam ou mal placé ?')) return;
+  if (!confirm('Confirmer que ce signalement te semble faux ou mal placé ?')) return;
 
   const bouton = document.getElementById('btn-signaler-errone');
   bouton.disabled = true;
@@ -322,7 +322,7 @@ async function signalerErrone() {
     console.error('Erreur signalement erroné :', erreur);
     alert('Impossible d\'envoyer ton signalement. Vérifie ta connexion.');
     bouton.disabled = false;
-    bouton.textContent = `Ce signalement te semble faux ou suspect ? Le signaler`;
+    bouton.textContent = `Ce signalement te semble t'il faux ou suspect ? Le signaler`;
   }
 }
 

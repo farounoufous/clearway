@@ -78,7 +78,7 @@ function construirePopup(item, couleur) {
     : (item.il_y_a || '');
 
   const avertissementIncertain = item.confiance === 'incertain'
-    ? '<div class="popup-avertissement">⚠ Non reconfirmé depuis un moment — fiabilité incertaine</div>'
+    ? '<div class="popup-avertissement">⚠ Non reconfirmé depuis un moment :fiabilité incertaine</div>'
     : '';
 
   return `
