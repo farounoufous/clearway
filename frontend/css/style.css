@@ -885,33 +885,10 @@ body {
 }
 
 /* ============================================
-   Mode sombre — automatique par défaut (suit le système),
-   mais peut être forcé manuellement via le bouton du menu
-   (data-theme="dark"/"light" posé sur <html> par js/theme.js)
+   Mode sombre — désormais uniquement sur choix explicite de l'utilisateur
+   (bouton du menu, data-theme="dark" posé sur <html> par js/theme.js).
+   Le mode clair est le mode par défaut, quel que soit le réglage système.
    ============================================ */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bleu-fonce: #4f83c9;
-    --bleu-fonce-hover: #6b9bdb;
-    --rouge: #ef5350;
-    --orange: #ffa726;
-    --vert: #66bb6a;
-    --vert-clair: #1b3320;
-    --gris-fond: #15181d;
-    --gris-bordure: #2c3038;
-    --gris-texte: #a0a5ad;
-    --blanc: #1e2128;
-    --noir-texte: #eef0f2;
-  }
-
-  body { background: #0c0e12; }
-  .stat-carte.rouge { background: #3a1f1f; }
-  img.photo-signalement { opacity: 0.92; }
-}
-
-@media (prefers-color-scheme: dark) and (min-width: 1024px) {
-  body { background: linear-gradient(180deg, #0a1628 0%, #0c0e12 280px); }
-}
 
 /* ---- Forçage explicite (bouton "Mode sombre" du menu) : prime toujours,
    quel que soit le réglage système, grâce au sélecteur d'attribut ---- */

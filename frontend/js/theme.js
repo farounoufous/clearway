@@ -1,22 +1,18 @@
-// Par défaut, l'app suit le réglage du système (prefers-color-scheme).
-// Ce script permet de FORCER un choix explicite via le bouton du menu,
-// qui prime alors sur le système jusqu'à ce que l'utilisateur le change.
+// Mode clair par défaut, quel que soit le réglage du système.
+// Seul un choix explicite de l'utilisateur (bouton du menu) active le mode sombre.
 const CLE_THEME = 'clearway_theme';
 
-// ---- Applique tout de suite la préférence sauvegardée (avant l'affichage,
-// pour éviter un flash de la mauvaise couleur au chargement) ----
+// ---- Applique tout de suite le thème (avant l'affichage, pour éviter un
+// flash de la mauvaise couleur au chargement) : sombre uniquement si
+// l'utilisateur l'a choisi explicitement, clair dans tous les autres cas ----
 (function appliquerThemeSauvegarde() {
   const theme = localStorage.getItem(CLE_THEME);
-  if (theme === 'dark' || theme === 'light') {
-    document.documentElement.setAttribute('data-theme', theme);
-  }
+  document.documentElement.setAttribute('data-theme', theme === 'dark' ? 'dark' : 'light');
 })();
 
-// ---- Détermine le thème actuellement affiché (forcé, ou sinon système) ----
+// ---- Détermine le thème actuellement affiché (choix explicite, sinon clair par défaut) ----
 function themeActuellementAffiche() {
-  const force = localStorage.getItem(CLE_THEME);
-  if (force === 'dark' || force === 'light') return force;
-  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  return localStorage.getItem(CLE_THEME) === 'dark' ? 'dark' : 'light';
 }
 
 function mettreAJourBoutonTheme() {
