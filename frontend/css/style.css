@@ -50,6 +50,13 @@ h1, h2, h3,
 .boite-confirmation {
   font-family: var(--police-titres);
 }
+.conteneur-action {
+    display: flex;
+    justify-content: center;
+    width: 100%;        
+    margin-top: 16px;        
+}
+
 
 /* Conteneur mobile-first : simule le cadre "téléphone" de la maquette */
 .ecran {
