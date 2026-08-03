@@ -144,7 +144,7 @@ carte.on('click', (evenement) => {
 // ---- Bouton "Ma position" : place automatiquement le départ ----
 btnMaPosition.addEventListener('click', () => {
   if (!('geolocation' in navigator)) {
-    alert("Ton navigateur ne permet pas la géolocalisation.");
+    afficherAlerteModale("Ton navigateur ne permet pas la géolocalisation.");
     return;
   }
   btnMaPosition.textContent = 'Recherche...';
@@ -157,7 +157,7 @@ btnMaPosition.addEventListener('click', () => {
     },
     () => {
       btnMaPosition.textContent = 'Ma position';
-      alert("Impossible de te localiser. Vérifie que la géolocalisation est autorisée.");
+      afficherAlerteModale("Impossible de te localiser. Vérifie que la géolocalisation est autorisée.");
     },
     { enableHighAccuracy: true, timeout: 10000 }
   );

@@ -78,7 +78,7 @@ function construirePopup(item, couleur) {
     : (item.il_y_a || '');
 
   const avertissementIncertain = item.confiance === 'incertain'
-    ? '<div class="popup-avertissement">⚠ Non reconfirmé depuis un moment :fiabilité incertaine</div>'
+    ? '<div class="popup-avertissement">⚠ Non reconfirmé depuis un moment — fiabilité incertaine</div>'
     : '';
 
   return `
@@ -112,7 +112,7 @@ async function envoyerVoieDegagee(id, bouton) {
     const resultat = await reponse.json();
 
     if (!reponse.ok) {
-      alert(resultat.erreur || 'Une erreur est survenue.');
+      await afficherAlerteModale(resultat.erreur || 'Une erreur est survenue.');
       bouton.disabled = false;
       bouton.textContent = texteOriginal;
       return;
@@ -122,7 +122,7 @@ async function envoyerVoieDegagee(id, bouton) {
 
   } catch (erreur) {
     console.error('Erreur envoi confirmation (carte) :', erreur);
-    alert('Impossible d\'envoyer ta confirmation. Vérifie ta connexion.');
+    await afficherAlerteModale('Impossible d\'envoyer ta confirmation. Vérifie ta connexion.');
     bouton.disabled = false;
     bouton.textContent = texteOriginal;
   }
@@ -217,7 +217,7 @@ carte.on('locationfound', (evenement) => {
 
 carte.on('locationerror', () => {
   boutonLocaliser.classList.remove('en-cours');
-  alert('Impossible de te localiser. Vérifie que la géolocalisation est autorisée pour ce site, puis réessaie.');
+  afficherAlerteModale('Impossible de te localiser. Vérifie que la géolocalisation est autorisée pour ce site, puis réessaie.');
 });
 
 // ---- Chargement initial + rafraîchissement périodique (même logique que l'accueil) ----

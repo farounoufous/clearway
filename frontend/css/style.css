@@ -3,6 +3,14 @@
    ClearWay Bénin - Style global
    ============================================ */
 
+/* Police d'accroche pour les titres uniquement (Sora) : plus de caractère
+   qu'une police système pour les titres, sans alourdir le corps de texte
+   (qui reste en police système, plus rapide et plus lisible sur mobile).
+   Direction retenue : institutionnelle/rassurante avec une touche chaleureuse -
+   Sora a des formes géométriques mais légèrement arrondies, confiantes sans
+   être froides. */
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&display=swap');
+
 :root {
   --bleu-fonce: #0f3460;
   --bleu-fonce-hover: #0c2a4d;
@@ -17,6 +25,13 @@
   --blanc: #ffffff;
   --noir-texte: #1a1a1a;
   --rayon: 12px;
+  --police-titres: 'Sora', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+
+  /* Profondeur : une seule échelle d'ombre réutilisée partout (cartes,
+     survols), pour que "ce qui est cliquable" se détache de façon cohérente
+     d'un écran à l'autre plutôt que d'avoir des traitements disparates. */
+  --ombre-carte: 0 1px 3px rgba(15, 52, 96, 0.07), 0 1px 2px rgba(15, 52, 96, 0.04);
+  --ombre-carte-hover: 0 6px 16px rgba(15, 52, 96, 0.12);
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -26,6 +41,14 @@ body {
   background: var(--gris-fond);
   color: var(--noir-texte);
   line-height: 1.4;
+}
+
+h1, h2, h3,
+.titre-section,
+.nom-zone,
+.carte-signalement-zone,
+.boite-confirmation {
+  font-family: var(--police-titres);
 }
 
 /* Conteneur mobile-first : simule le cadre "téléphone" de la maquette */
@@ -39,15 +62,16 @@ body {
   position: relative; /* ancre .panneau-notifications même en mode carte flottante (tablette/desktop) */
 }
 
-/* Header */
+/* Header : dégradé discret (au lieu d'un aplat uni) pour une sensation de
+   profondeur institutionnelle plutôt qu'un simple bandeau plat */
 .header {
-  background: var(--bleu-fonce);
+  background: linear-gradient(135deg, #123d72 0%, var(--bleu-fonce) 55%, #0b2647 100%);
   color: var(--blanc);
   padding: 28px 20px 32px;
   border-radius: 0 0 20px 20px;
 }
 
-.header h1 { font-size: 1.4rem; font-weight: 700; letter-spacing: -0.01em; }
+.header h1 { font-family: var(--police-titres); font-size: 1.4rem; font-weight: 700; letter-spacing: -0.01em; }
 .header p { font-size: 0.88rem; opacity: 0.75; margin-top: 4px; }
 
 .header-nav { display: flex; align-items: center; gap: 14px; }
@@ -71,13 +95,14 @@ body {
   border-radius: var(--rayon);
   padding: 18px 14px;
   text-align: center;
+  box-shadow: var(--ombre-carte);
 }
 
 .stat-carte.rouge { background: #fdecea; }
 .stat-carte.vert { background: var(--vert-clair); }
 .stat-carte.rouge .chiffre { color: var(--rouge); }
 .stat-carte.vert .chiffre { color: var(--vert); }
-.stat-carte .chiffre { font-size: 1.9rem; font-weight: 800; display: block; line-height: 1.1; }
+.stat-carte .chiffre { font-family: var(--police-titres); font-size: 1.9rem; font-weight: 800; display: block; line-height: 1.1; }
 .stat-carte .libelle { font-size: 0.78rem; color: var(--gris-texte); font-weight: 500; }
 
 .carte-liste {
@@ -86,28 +111,35 @@ body {
   border-radius: var(--rayon);
   padding: 16px;
   margin-bottom: 24px;
+  box-shadow: var(--ombre-carte);
 }
 
 .titre-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 0.78rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
   color: var(--gris-texte);
-  margin-bottom: 10px;
+  margin-bottom: 12px;
+}
+
+/* Petit repère visuel avant chaque titre de section, pour casser l'effet
+   "simple étiquette grise" et ancrer une identité graphique récurrente */
+.titre-section::before {
+  content: '';
+  display: inline-block;
+  width: 14px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--bleu-fonce);
+  flex-shrink: 0;
 }
 
 .section-derniers {
   margin-bottom: 24px;
-}
-
-.titre-section {
-  font-size: 0.78rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--gris-texte);
-  margin-bottom: 10px;
 }
 
 .liste-signalements {
@@ -127,13 +159,13 @@ body {
   padding: 14px 16px;
   text-decoration: none;
   color: inherit;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  box-shadow: var(--ombre-carte);
   transition: box-shadow 0.15s ease, transform 0.15s ease;
 }
 
 .carte-signalement-accueil:hover,
 .carte-signalement-accueil:focus-visible {
-  box-shadow: 0 3px 10px rgba(0,0,0,0.09);
+  box-shadow: var(--ombre-carte-hover);
   transform: translateY(-1px);
 }
 
@@ -202,8 +234,8 @@ body {
 }
 
 .btn-principal { background: var(--bleu-fonce); color: var(--blanc); }
-.btn-principal:hover { background: var(--bleu-fonce-hover); }
-.btn-principal:active { transform: scale(0.97); }
+.btn-principal:hover { background: var(--bleu-fonce-hover); box-shadow: var(--ombre-carte-hover); }
+.btn-principal:active { transform: scale(0.97); box-shadow: none; }
 
 .btn-secondaire {
   background: var(--blanc);
@@ -223,6 +255,8 @@ body {
 }
 
 .btn-rouge { background: var(--rouge); color: var(--blanc); }
+.btn-rouge:hover { box-shadow: 0 6px 16px rgba(211, 47, 47, 0.28); }
+.btn-rouge:active { transform: scale(0.97); box-shadow: none; }
 
 .btn-bleu-contour {
   background: var(--blanc);
@@ -437,11 +471,18 @@ body {
   background: var(--blanc);
   border-left: 5px solid var(--gris-bordure);
   border-radius: 8px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  box-shadow: var(--ombre-carte);
   padding: 14px 16px;
   margin-bottom: 14px;
   text-decoration: none;
   color: inherit;
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.carte-voie:hover,
+.carte-voie:focus-visible {
+  box-shadow: var(--ombre-carte-hover);
+  transform: translateY(-1px);
 }
 
 .carte-voie.severe { border-left-color: var(--rouge); }
@@ -700,16 +741,45 @@ body {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45);
+  background: rgba(10, 14, 20, 0.5);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 20px;
   z-index: 1000;
+  opacity: 0;
+  animation: modal-fondu-entree 0.18s ease forwards;
 }
 
 .modal-overlay[hidden] {
   display: none;
+}
+
+.modal-overlay.fermeture {
+  animation: modal-fondu-sortie 0.15s ease forwards;
+}
+
+@keyframes modal-fondu-entree {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modal-fondu-sortie {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+.modal-notif,
+.modal-carte,
+.modal-confirmation-action {
+  animation: modal-apparition-carte 0.22s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+@keyframes modal-apparition-carte {
+  from { opacity: 0; transform: translateY(14px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .modal-notif {
@@ -906,6 +976,8 @@ body {
   --gris-texte: #a0a5ad;
   --blanc: #1e2128;
   --noir-texte: #eef0f2;
+  --ombre-carte: 0 1px 3px rgba(0, 0, 0, 0.35), 0 1px 2px rgba(0, 0, 0, 0.2);
+  --ombre-carte-hover: 0 6px 18px rgba(0, 0, 0, 0.45);
 }
 
 :root[data-theme="dark"] body { background: #0c0e12; }
@@ -1636,6 +1708,7 @@ body {
   border-radius: 10px;
   padding: 14px 16px;
   margin-bottom: 12px;
+  box-shadow: var(--ombre-carte);
 }
 
 .carte-doublon-titre {
@@ -1683,4 +1756,41 @@ body {
 .lien-signaler-errone:disabled {
   cursor: default;
   color: var(--vert);
+}
+
+/* ============================================
+   Modale de confirmation/alerte générique (cf. frontend/js/modal.js)
+   Remplace les confirm()/alert() natifs du navigateur par une vraie carte
+   stylisée sur fond flouté, cohérente avec .modal-carte / .modal-notif.
+   ============================================ */
+.modal-confirmation-action {
+  background: var(--blanc);
+  border-radius: var(--rayon);
+  padding: 24px 22px;
+  max-width: 360px;
+  width: 100%;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+}
+
+.modal-confirmation-action h2 {
+  font-size: 1.05rem;
+  color: var(--noir-texte);
+  margin-bottom: 8px;
+}
+
+.modal-confirmation-action p {
+  font-size: 0.9rem;
+  color: var(--gris-texte);
+  line-height: 1.5;
+  margin-bottom: 22px;
+}
+
+.modal-confirmation-action .modal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.modal-confirmation-action .btn {
+  margin-bottom: 0;
 }

@@ -254,7 +254,7 @@ async function envoyerAction(action, btnToujoursBloquee, btnVoieDegagee) {
     const resultat = await reponse.json();
 
     if (!reponse.ok) {
-      alert(resultat.erreur || 'Une erreur est survenue.');
+      await afficherAlerteModale(resultat.erreur || 'Une erreur est survenue.');
       btnToujoursBloquee.disabled = false;
       btnVoieDegagee.disabled = false;
       btnToujoursBloquee.textContent = texteOriginalToujoursBloquee;
@@ -270,7 +270,7 @@ async function envoyerAction(action, btnToujoursBloquee, btnVoieDegagee) {
 
   } catch (erreur) {
     console.error('Erreur envoi confirmation :', erreur);
-    alert('Impossible d\'envoyer ta confirmation. Vérifie ta connexion.');
+    await afficherAlerteModale('Impossible d\'envoyer ta confirmation. Vérifie ta connexion.');
     btnToujoursBloquee.disabled = false;
     btnVoieDegagee.disabled = false;
     btnToujoursBloquee.textContent = texteOriginalToujoursBloquee;
@@ -280,7 +280,11 @@ async function envoyerAction(action, btnToujoursBloquee, btnVoieDegagee) {
 
 // ---- Signale ce signalement comme faux/suspect/mal placé (seuil bas : 2 avis distincts) ----
 async function signalerErrone() {
-  if (!confirm('Confirmer que ce signalement te semble faux ou mal placé ?')) return;
+  const confirme = await afficherConfirmationModale(
+    "Ce signalement sera retiré dès 2 signalements de ce type. Confirme uniquement si tu penses vraiment qu'il est faux, spam, ou mal placé.",
+    { titre: 'Signaler comme erroné ?', texteConfirmer: 'Oui, signaler', dangereux: true }
+  );
+  if (!confirme) return;
 
   const bouton = document.getElementById('btn-signaler-errone');
   bouton.disabled = true;
@@ -299,7 +303,7 @@ async function signalerErrone() {
     const resultat = await reponse.json();
 
     if (!reponse.ok) {
-      alert(resultat.erreur || 'Une erreur est survenue.');
+      await afficherAlerteModale(resultat.erreur || 'Une erreur est survenue.');
       bouton.disabled = false;
       bouton.textContent = `Ce signalement te semble faux ou suspect ? Le signaler`;
       return;
@@ -320,9 +324,9 @@ async function signalerErrone() {
 
   } catch (erreur) {
     console.error('Erreur signalement erroné :', erreur);
-    alert('Impossible d\'envoyer ton signalement. Vérifie ta connexion.');
+    await afficherAlerteModale('Impossible d\'envoyer ton signalement. Vérifie ta connexion.');
     bouton.disabled = false;
-    bouton.textContent = `Ce signalement te semble t'il faux ou suspect ? Le signaler`;
+    bouton.textContent = `Ce signalement te semble faux ou suspect ? Le signaler`;
   }
 }
 
@@ -346,7 +350,7 @@ async function confirmerArchivageDefinitif() {
     const resultat = await reponse.json();
 
     if (!reponse.ok) {
-      alert(resultat.erreur || 'Une erreur est survenue.');
+      await afficherAlerteModale(resultat.erreur || 'Une erreur est survenue.');
       bouton.disabled = false;
       bouton.textContent = 'Confirmer et retirer de la liste';
       return;
@@ -368,7 +372,7 @@ async function confirmerArchivageDefinitif() {
 
   } catch (erreur) {
     console.error('Erreur confirmation archivage :', erreur);
-    alert('Impossible d\'envoyer ta confirmation. Vérifie ta connexion.');
+    await afficherAlerteModale('Impossible d\'envoyer ta confirmation. Vérifie ta connexion.');
     bouton.disabled = false;
     bouton.textContent = 'Confirmer et retirer de la liste';
   }
