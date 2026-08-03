@@ -50,13 +50,6 @@ h1, h2, h3,
 .boite-confirmation {
   font-family: var(--police-titres);
 }
-.conteneur-action {
-    display: flex;
-    justify-content: center; 
-    width: 100%;        
-    margin-top: 20px ;        
-}
-
 
 /* Conteneur mobile-first : simule le cadre "téléphone" de la maquette */
 .ecran {
@@ -72,7 +65,7 @@ h1, h2, h3,
 /* Header : dégradé discret (au lieu d'un aplat uni) pour une sensation de
    profondeur institutionnelle plutôt qu'un simple bandeau plat */
 .header {
-  background: linear-gradient(135deg, #123d72 0%, var(--bleu-fonce) 55%, #0b2647 100%);
+  background: var(--bleu-fonce);
   color: var(--blanc);
   padding: 28px 20px 32px;
   border-radius: 0 0 20px 20px;
@@ -621,16 +614,9 @@ h1, h2, h3,
 
 .btn-cloche:active { transform: scale(0.94); }
 
-.btn-cloche.actif {
-  background: rgba(255, 209, 102, 0.18);
-  color: #ffd166;
-  animation: cloche-pulse 2.4s ease-in-out infinite;
-}
-
-@keyframes cloche-pulse {
-  0%, 100% { box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12), 0 0 0 0 rgba(255, 209, 102, 0.35); }
-  50% { box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12), 0 0 0 6px rgba(255, 209, 102, 0); }
-}
+/* L'état "notifications actives" est signalé uniquement par le point vert
+   discret (.point-actif) - pas besoin d'un second indicateur sur le bouton
+   lui-même, ça évite un effet racoleur pour une simple case "activé". */
 
 .point-actif {
   position: absolute;
@@ -955,7 +941,7 @@ h1, h2, h3,
 
 @media (min-width: 1024px) {
   body {
-    background: linear-gradient(180deg, var(--bleu-fonce) 0%, var(--gris-fond) 280px);
+    background: var(--gris-fond);
   }
 
   .ecran {
@@ -991,10 +977,6 @@ h1, h2, h3,
 :root[data-theme="dark"] .stat-carte.rouge { background: #3a1f1f; }
 :root[data-theme="dark"] img.photo-signalement { opacity: 0.92; }
 
-@media (min-width: 1024px) {
-  :root[data-theme="dark"] body { background: linear-gradient(180deg, #0a1628 0%, #0c0e12 280px); }
-}
-
 :root[data-theme="light"] {
   --bleu-fonce: #0f3460;
   --bleu-fonce-hover: #0c2a4d;
@@ -1013,10 +995,6 @@ h1, h2, h3,
 :root[data-theme="light"] body { background: var(--gris-fond); }
 :root[data-theme="light"] .stat-carte.rouge { background: #fdecea; }
 :root[data-theme="light"] img.photo-signalement { opacity: 1; }
-
-@media (min-width: 1024px) {
-  :root[data-theme="light"] body { background: linear-gradient(180deg, var(--bleu-fonce) 0%, var(--gris-fond) 280px); }
-}
 
 /* ---- Bouton "Mode sombre" dans le menu ---- */
 .panneau-menu-toggle {
