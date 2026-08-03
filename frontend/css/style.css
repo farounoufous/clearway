@@ -24,7 +24,7 @@
   --gris-texte: #555;
   --blanc: #ffffff;
   --noir-texte: #1a1a1a;
-  --rayon: 12px;
+  --rayon: 0;
   --police-titres: 'Sora', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
 
   /* Profondeur : une seule échelle d'ombre réutilisée partout (cartes,
@@ -68,7 +68,7 @@ h1, h2, h3,
   background: var(--bleu-fonce);
   color: var(--blanc);
   padding: 28px 20px 32px;
-  border-radius: 0 0 20px 20px;
+  border-radius: 0;
 }
 
 .header h1 { font-family: var(--police-titres); font-size: 1.4rem; font-weight: 700; letter-spacing: -0.01em; }
@@ -133,7 +133,7 @@ h1, h2, h3,
   display: inline-block;
   width: 14px;
   height: 3px;
-  border-radius: 2px;
+  border-radius: 0;
   background: var(--bleu-fonce);
   flex-shrink: 0;
 }
@@ -155,7 +155,7 @@ h1, h2, h3,
   background: var(--blanc);
   border: 1px solid var(--gris-bordure);
   border-left: 4px solid var(--gris-bordure);
-  border-radius: 12px;
+  border-radius: 0;
   padding: 14px 16px;
   text-decoration: none;
   color: inherit;
@@ -284,7 +284,7 @@ h1, h2, h3,
   background: var(--gris-texte);
 }
 
-.etat-vide { text-align: center; color: var(--gris-texte); padding: 40px 20px; }
+.etat-vide { text-align: center; color: var(--gris-texte); padding: 20px 20px; }
 
 .lien-discret {
   display: block;
@@ -393,7 +393,7 @@ h1, h2, h3,
 
 .message-etat {
   padding: 12px;
-  border-radius: 8px;
+  border-radius: 0;
   font-size: 0.9rem;
   margin-bottom: 16px;
   text-align: center;
@@ -427,7 +427,7 @@ h1, h2, h3,
   align-items: center;
   gap: 8px;
   background: var(--bleu-clair);
-  border-radius: 8px;
+  border-radius: 0;
   padding: 10px 12px;
   margin-top: 8px;
   font-size: 0.86rem;
@@ -457,7 +457,7 @@ h1, h2, h3,
   width: 100%;
   max-height: 220px;
   object-fit: cover;
-  border-radius: 8px;
+  border-radius: 0;
   margin-top: 10px;
   display: block;
 }
@@ -470,7 +470,7 @@ h1, h2, h3,
   display: block;
   background: var(--blanc);
   border-left: 5px solid var(--gris-bordure);
-  border-radius: 8px;
+  border-radius: 0;
   box-shadow: var(--ombre-carte);
   padding: 14px 16px;
   margin-bottom: 14px;
@@ -518,7 +518,7 @@ h1, h2, h3,
   font-size: 0.7rem;
   font-weight: 700;
   padding: 2px 8px;
-  border-radius: 20px;
+  border-radius: 0;
   margin-left: 8px;
   vertical-align: middle;
 }
@@ -532,7 +532,7 @@ h1, h2, h3,
   font-size: 0.7rem;
   font-weight: 700;
   padding: 2px 8px;
-  border-radius: 20px;
+  border-radius: 0;
   margin-left: 8px;
   vertical-align: middle;
 }
@@ -543,7 +543,7 @@ h1, h2, h3,
   font-size: 0.7rem;
   font-weight: 700;
   padding: 2px 8px;
-  border-radius: 20px;
+  border-radius: 0;
   margin-left: 8px;
   vertical-align: middle;
 }
@@ -637,7 +637,7 @@ h1, h2, h3,
   min-width: 17px;
   height: 17px;
   padding: 0 4px;
-  border-radius: 10px;
+  border-radius: 0;
   background: var(--rouge);
   color: var(--blanc);
   border: 2px solid var(--bleu-fonce);
@@ -661,7 +661,7 @@ h1, h2, h3,
   width: 300px;
   max-width: calc(100vw - 40px);
   background: var(--blanc);
-  border-radius: 14px;
+  border-radius: 0;
   box-shadow: 0 12px 32px rgba(0,0,0,0.18);
   z-index: 900;
   overflow: hidden;
@@ -831,14 +831,14 @@ h1, h2, h3,
   width: 100%;
   height: 10px;
   background: var(--gris-fond);
-  border-radius: 20px;
+  border-radius: 0;
   overflow: hidden;
 }
 
 .progression-degagee-remplissage {
   height: 100%;
   background: var(--bleu-fonce);
-  border-radius: 20px;
+  border-radius: 0;
   transition: width 0.4s ease;
 }
 
@@ -846,7 +846,7 @@ h1, h2, h3,
   background: #eaf1fb;
   color: var(--bleu-fonce);
   border: 1px solid #c9dbf2;
-  border-radius: 10px;
+  border-radius: 0;
   padding: 12px 14px;
   font-size: 0.88rem;
   line-height: 1.4;
@@ -857,7 +857,7 @@ h1, h2, h3,
 .note-proprietaire {
   background: var(--gris-fond);
   color: var(--gris-texte);
-  border-radius: 10px;
+  border-radius: 0;
   padding: 10px 14px;
   font-size: 0.85rem;
   text-align: center;
@@ -905,14 +905,14 @@ h1, h2, h3,
   width: 100%;
   height: 5px;
   background: var(--gris-fond);
-  border-radius: 20px;
+  border-radius: 0;
   overflow: hidden;
 }
 
 .mini-progression-remplissage {
   height: 100%;
   background: var(--bleu-fonce);
-  border-radius: 20px;
+  border-radius: 0;
 }
 
 /* ============================================
@@ -933,7 +933,7 @@ h1, h2, h3,
   .ecran {
     min-height: auto;
     max-height: none;
-    border-radius: 22px;
+    border-radius: 0;
     box-shadow: 0 24px 64px rgba(15, 52, 96, 0.18);
     overflow: hidden;
   }
@@ -1081,7 +1081,7 @@ h1, h2, h3,
   background: var(--blanc);
   border: 1px solid var(--gris-bordure);
   border-left: 4px solid var(--vert);
-  border-radius: 12px;
+  border-radius: 0;
   padding: 14px 16px;
   margin-bottom: 10px;
 }
@@ -1099,7 +1099,7 @@ h1, h2, h3,
   height: auto;
   background: var(--blanc);
   border: 1px solid var(--gris-bordure);
-  border-radius: 14px;
+  border-radius: 0;
   margin-bottom: 16px;
 }
 
@@ -1167,7 +1167,7 @@ h1, h2, h3,
   width: 260px;
   max-width: calc(100vw - 40px);
   background: var(--blanc);
-  border-radius: 14px;
+  border-radius: 0;
   box-shadow: 0 12px 32px rgba(0,0,0,0.18);
   z-index: 900;
   overflow: hidden;
@@ -1215,7 +1215,7 @@ h1, h2, h3,
 
 .squelette-carte {
   height: 76px;
-  border-radius: 12px;
+  border-radius: 0;
   margin-bottom: 10px;
   background: linear-gradient(90deg, #eceef1 25%, #f5f6f8 37%, #eceef1 63%);
   background-size: 400% 100%;
@@ -1300,7 +1300,7 @@ h1, h2, h3,
 
 .resultats-recherche-lieu {
   border: 1px solid var(--gris-bordure);
-  border-radius: 8px;
+  border-radius: 0;
   max-height: 160px;
   overflow-y: auto;
   margin-top: -4px;
@@ -1325,7 +1325,7 @@ h1, h2, h3,
 #carte-leaflet {
   width: 100%;
   height: 320px;
-  border-radius: 8px;
+  border-radius: 0;
   overflow: hidden;
   border: 1px solid var(--gris-bordure);
 }
@@ -1473,7 +1473,7 @@ h1, h2, h3,
 
 /* ---- Contenu des pop-ups Leaflet (surcharge du style par défaut du plugin) ---- */
 .leaflet-popup-content-wrapper {
-  border-radius: 10px;
+  border-radius: 0;
   padding: 2px;
 }
 
@@ -1565,7 +1565,7 @@ h1, h2, h3,
   font-size: 0.7rem;
   font-weight: 700;
   padding: 2px 8px;
-  border-radius: 20px;
+  border-radius: 0;
   margin-left: 8px;
   vertical-align: middle;
 }
@@ -1577,7 +1577,7 @@ h1, h2, h3,
   background: #fff4e5;
   color: #8a5a00;
   border: 1px solid #f5d9a8;
-  border-radius: 10px;
+  border-radius: 0;
   padding: 10px 12px;
   font-size: 0.85rem;
   margin-bottom: 14px;
@@ -1587,7 +1587,7 @@ h1, h2, h3,
   font-size: 0.75rem;
   color: #8a5a00;
   background: #fff4e5;
-  border-radius: 6px;
+  border-radius: 0;
   padding: 4px 8px;
   margin-top: 6px;
 }
@@ -1678,7 +1678,7 @@ h1, h2, h3,
   font-size: 0.7rem;
   font-weight: 700;
   padding: 2px 8px;
-  border-radius: 20px;
+  border-radius: 0;
   margin-left: 8px;
   vertical-align: middle;
 }
@@ -1690,7 +1690,7 @@ h1, h2, h3,
 .carte-doublon-possible {
   background: var(--blanc);
   border: 1px solid var(--gris-bordure);
-  border-radius: 10px;
+  border-radius: 0;
   padding: 14px 16px;
   margin-bottom: 12px;
   box-shadow: var(--ombre-carte);
@@ -1778,4 +1778,26 @@ h1, h2, h3,
 
 .modal-confirmation-action .btn {
   margin-bottom: 0;
+}
+
+/* ============================================
+   Bouton "Signaler une voie bloquée" de l'accueil : fond bleu plein,
+   devient rouge au survol (variante spécifique à ce bouton uniquement,
+   .btn-secondaire garde son style habituel partout ailleurs).
+   ============================================ */
+.btn-signaler-accueil {
+  background: var(--bleu-fonce);
+  color: var(--blanc);
+  border-color: var(--bleu-fonce);
+}
+
+.btn-signaler-accueil:hover {
+  background: var(--rouge);
+  border-color: var(--rouge);
+  box-shadow: 0 6px 16px rgba(211, 47, 47, 0.28);
+}
+
+.btn-signaler-accueil:active {
+  transform: scale(0.97);
+  box-shadow: none;
 }
