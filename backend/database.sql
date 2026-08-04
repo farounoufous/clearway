@@ -1,31 +1,3 @@
--- Note : backend/config/db.php sait aussi mettre à jour tout seul le schéma
--- d'une base déjà existante (auto-réparation, y compris suppression de
--- l'ancienne table zones) : ce fichier sert surtout pour une toute première
--- installation.
--- Table 1 : signalements (le coeur du système)
---
--- Règle "voie dégagée" : il faut 3 confirmations "voie_degagee" de 3
--- VISITEURS DIFFÉRENTS avant que le signalement puisse être archivé
--- (retiré de la liste des voies bloquées), via un clic explicite.
---
--- Règle "validation communautaire" : dès que 3 VISITEURS DIFFÉRENTS ont
--- confirmé "toujours_bloquee", `valide` passe à 1. Un signalement validé
--- n'est plus jamais archivé automatiquement : il ne disparaît que si la
--- communauté le confirme "dégagé".
---
--- Règle de fiabilité graduée (statut 'incertain') : un signalement sans
--- AUCUNE confirmation "toujours_bloquee" depuis 90 min bascule en statut
--- 'incertain' -- il reste affiché (avec un badge "non confirmé") au lieu de
--- disparaître d'un coup. La fenêtre avant archivage définitif s'allonge de
--- 3h à chaque confirmation distincte reçue (0 confirmation -> 3h, 1 -> 6h,
--- 2 -> 9h), au lieu d'un seuil fixe unique. Voir backend/api/voies.php.
---
--- Localisation : latitude/longitude sont la donnée de référence (obligatoire
--- en pratique, imposé côté API). pays/ville/quartier/adresse_formatee sont
--- déduits par géocodage inversé et purement indicatifs pour l'affichage ;
--- ils peuvent être NULL si le géocodage échoue ou si l'utilisateur n'a pas
--- complété le quartier manquant.
--- ============================================
 CREATE TABLE IF NOT EXISTS signalements (
     id INT AUTO_INCREMENT PRIMARY KEY,
     type_obstacle ENUM('Inondation', 'Accident', 'Travaux', 'Autre') NOT NULL,
