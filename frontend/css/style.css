@@ -51,6 +51,13 @@ h1, h2, h3,
   font-family: var(--police-titres);
 }
 
+.nom-zone {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
 /* Conteneur mobile-first : simule le cadre "téléphone" de la maquette */
 .ecran {
   max-width: 420px;
@@ -197,7 +204,8 @@ h1, h2, h3,
 
 .separateur-point { margin: 0 5px; }
 
-.badge-nouveau-carte {
+.badge-nouveau-carte,
+.carte-signalement-accueil > .badge-incertain {
   position: absolute;
   top: 12px;
   right: 14px;
@@ -1556,7 +1564,7 @@ h1, h2, h3,
   font-weight: 700;
   padding: 2px 8px;
   border-radius: 0;
-  margin-left: 8px;
+  flex-shrink: 0;
   vertical-align: middle;
 }
 
