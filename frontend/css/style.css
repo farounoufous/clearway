@@ -128,16 +128,6 @@ h1, h2, h3,
 
 /* Petit repère visuel avant chaque titre de section, pour casser l'effet
    "simple étiquette grise" et ancrer une identité graphique récurrente */
-.titre-section::before {
-  content: '';
-  display: inline-block;
-  width: 14px;
-  height: 3px;
-  border-radius: 0;
-  background: var(--bleu-fonce);
-  flex-shrink: 0;
-}
-
 .section-derniers {
   margin-bottom: 24px;
 }
@@ -155,7 +145,7 @@ h1, h2, h3,
   background: var(--blanc);
   border: 1px solid var(--gris-bordure);
   border-left: 4px solid var(--gris-bordure);
-  border-radius: 0;
+  border-radius: 5px;
   padding: 14px 16px;
   text-decoration: none;
   color: inherit;
@@ -276,7 +266,7 @@ h1, h2, h3,
 }
 
 .btn:disabled {
-  opacity: 0.55;
+  opacity: 0.7;
   cursor: not-allowed;
 }
 
@@ -427,7 +417,7 @@ h1, h2, h3,
   align-items: center;
   gap: 8px;
   background: var(--bleu-clair);
-  border-radius: 0;
+  border-radius: 5px;
   padding: 10px 12px;
   margin-top: 8px;
   font-size: 0.86rem;
@@ -831,7 +821,7 @@ h1, h2, h3,
   width: 100%;
   height: 10px;
   background: var(--gris-fond);
-  border-radius: 0;
+  border-radius: 2px;
   overflow: hidden;
 }
 
