@@ -1,4 +1,4 @@
-const VERSION_CACHE = 'clearway-v3';
+const VERSION_CACHE = 'clearway-v4';
 const CACHE_SHELL = `${VERSION_CACHE}-shell`;
 const CACHE_DONNEES = `${VERSION_CACHE}-donnees`;
 
@@ -11,6 +11,8 @@ const FICHIERS_SHELL = [
   'confirmation.html',
   'mes-signalements.html',
   'recemment-degage.html',
+  'carte.html',
+  'itineraire.html',
   'css/style.css',
   'js/app.js',
   'js/voies.js',
@@ -18,9 +20,15 @@ const FICHIERS_SHELL = [
   'js/confirmation.js',
   'js/mes-signalements.js',
   'js/recemment-degage.js',
+  'js/carte.js',
+  'js/itineraire.js',
+  'js/geo_alerts.js',
   'js/menu.js',
+  'js/theme.js',
+  'js/modal.js',
   'js/notifications.js',
   'js/notifications-locales.js',
+  'js/sw-register.js',
   'manifest.json',
   'logo.svg',
   'logo-header.svg',
@@ -96,7 +104,27 @@ self.addEventListener('fetch', (evenement) => {
   }
 
 
-  // Fichiers de l'app (HTML/CSS/JS/images) : cache en priorité (rapide),
+  // Pages HTML (navigation) : réseau en priorité, pour toujours servir la
+  // dernière version déployée quand la connexion est disponible. Le cache
+  // ne sert qu'en dernier recours (hors ligne, ou requête réseau échouée) -
+  // évite qu'une mise à jour de l'app reste invisible tant que le cache
+  // n'a pas explicitement été invalidé.
+  if (requete.mode === 'navigate' || requete.destination === 'document') {
+    evenement.respondWith(
+      fetch(requete)
+        .then((reponse) => {
+          if (reponse && reponse.ok) {
+            const copie = reponse.clone();
+            caches.open(CACHE_SHELL).then((cache) => cache.put(requete, copie));
+          }
+          return reponse;
+        })
+        .catch(() => caches.match(requete).then((r) => r || caches.match('index.html')))
+    );
+    return;
+  }
+
+  // Fichiers statiques (CSS/JS/images) : cache en priorité (rapide),
   // avec mise à jour silencieuse en arrière-plan pour la prochaine visite
   evenement.respondWith(
     caches.match(requete).then((reponseCache) => {
