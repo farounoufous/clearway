@@ -58,7 +58,7 @@ function mettreAJourAffichageChamps() {
     texteDepart.textContent = formaterCoordonnees(pointDepart);
     texteDepart.classList.add('rempli');
   } else {
-    texteDepart.textContent = 'Choisis ton point de départ';
+    texteDepart.textContent = 'Choisissez votre point de départ';
     texteDepart.classList.remove('rempli');
   }
 
@@ -66,7 +66,7 @@ function mettreAJourAffichageChamps() {
     texteArrivee.textContent = formaterCoordonnees(pointArrivee);
     texteArrivee.classList.add('rempli');
   } else {
-    texteArrivee.textContent = 'Choisis ta destination';
+    texteArrivee.textContent = 'Choisissez votre destination';
     texteArrivee.classList.remove('rempli');
   }
 
@@ -74,11 +74,11 @@ function mettreAJourAffichageChamps() {
   btnVerifier.disabled = !(pointDepart && pointArrivee);
 
   if (!pointDepart) {
-    aideEl.innerHTML = 'Touche la carte une première fois pour placer le <strong>départ</strong>, une deuxième fois pour la <strong>destination</strong>.';
+    aideEl.innerHTML = 'Touchez la carte une première fois pour placer le <strong>point de départ</strong> et une deuxième fois pour la <strong>destination</strong>.';
   } else if (!pointArrivee) {
-    aideEl.innerHTML = 'Départ placé. Touche la carte une deuxième fois pour placer la <strong>destination</strong>.';
+    aideEl.innerHTML = 'Départ placé. Touchez la carte une deuxième fois pour placer la <strong>destination</strong>.';
   } else {
-    aideEl.innerHTML = 'Les deux points sont placés — tu peux les glisser pour ajuster, ou lancer la vérification ci-dessous.';
+    aideEl.innerHTML = 'Les deux points sont placés; vouu pouvez les glisser pour ajuster.';
   }
 }
 
@@ -144,7 +144,7 @@ carte.on('click', (evenement) => {
 // ---- Bouton "Ma position" : place automatiquement le départ ----
 btnMaPosition.addEventListener('click', () => {
   if (!('geolocation' in navigator)) {
-    afficherAlerteModale("Ton navigateur ne permet pas la géolocalisation.");
+    afficherAlerteModale("Votre navigateur ne permet pas la géolocalisation.");
     return;
   }
   btnMaPosition.textContent = 'Recherche...';
@@ -157,7 +157,7 @@ btnMaPosition.addEventListener('click', () => {
     },
     () => {
       btnMaPosition.textContent = 'Ma position';
-      afficherAlerteModale("Impossible de te localiser. Vérifie que la géolocalisation est autorisée.");
+      afficherAlerteModale("Impossible de vous localiser. Vérifiez que la géolocalisation est autorisée.");
     },
     { enableHighAccuracy: true, timeout: 10000 }
   );
@@ -235,8 +235,7 @@ async function verifierTrajet() {
     if (donnees.nb_resultats === 0) {
       resultatsEl.innerHTML = `
         <p class="etat-vide">
-          Aucun signalement actif sur cet axe pour le moment. Le trajet a l'air dégagé —
-          reste prudent, cette information reste basée sur les signalements de la communauté.
+          Aucun signalement actif sur cet trajet pour le moment. Soyez prudent, cette information reste basée sur les signalements de la communauté.
         </p>
       `;
       return;
@@ -244,7 +243,7 @@ async function verifierTrajet() {
 
     resultatsEl.innerHTML = `
       <p class="itineraire-aide" style="padding: 0;">
-        ${donnees.nb_resultats} signalement${donnees.nb_resultats > 1 ? 's' : ''} sur ce trajet (dans un corridor de ${(donnees.corridor_km * 1000).toFixed(0)} m autour de l'axe direct), du départ vers la destination :
+        ${donnees.nb_resultats} signalement${donnees.nb_resultats > 1 ? 's' : ''} sur ce trajet (dans un corridor de ${(donnees.corridor_km * 1000).toFixed(0)} m .:
       </p>
       ${donnees.signalements.map(construireCarteResultat).join('')}
     `;
@@ -253,13 +252,13 @@ async function verifierTrajet() {
     donnees.signalements.forEach((s) => {
       const icone = creerIconePoint(s.gravite_classe === 'severe' ? 'rouge' : 'orange');
       const marqueur = L.marker([s.latitude, s.longitude], { icon: icone }).addTo(carte);
-      marqueur.bindPopup(`<strong>${s.zone}</strong><br>${s.gravite_label}${s.confiance === 'incertain' ? ' — non confirmé' : ''}`);
+      marqueur.bindPopup(`<strong>${s.zone}</strong><br>${s.gravite_label}${s.confiance === 'incertain' ? ' non confirmé' : ''}`);
       marqueursResultats.push(marqueur);
     });
 
   } catch (erreur) {
     console.error('Erreur vérification trajet :', erreur);
-    resultatsEl.innerHTML = '<p class="etat-vide">Impossible de vérifier ce trajet. Vérifie ta connexion.</p>';
+    resultatsEl.innerHTML = '<p class="etat-vide">Impossible de vérifier ce trajet. Vérifie votre connexion.</p>';
   } finally {
     btnVerifier.disabled = false;
     btnVerifier.textContent = texteOriginal;

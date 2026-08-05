@@ -1,6 +1,5 @@
 window.API_BASE = window.API_BASE || 'https://clearway-production-6e27.up.railway.app/api';
 
-
 async function chargerRecemmentDegage() {
   const listeEl = document.getElementById('liste-recemment-degage');
 
@@ -10,7 +9,7 @@ async function chargerRecemmentDegage() {
     const items = await reponse.json();
 
     if (!items || items.length === 0) {
-      listeEl.innerHTML = '<p class="etat-vide">Aucune voie dégagée confirmée dans les dernières 24h.</p>';
+      listeEl.innerHTML = '<p class="etat-vide">Aucune voie confirmée dégagée dans les dernières 24h.</p>';
       return;
     }
 
@@ -25,7 +24,7 @@ async function chargerRecemmentDegage() {
     `).join('');
 
   } catch (erreur) {
-    listeEl.innerHTML = '<p class="etat-vide">Impossible de charger la liste. Vérifie ta connexion.</p>';
+    listeEl.innerHTML = '<p class="etat-vide">Impossible de charger la liste. Vérifiez votre connexion.</p>';
     console.error('Erreur chargement récemment dégagé :', erreur);
   }
 }

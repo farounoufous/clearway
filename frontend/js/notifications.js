@@ -126,11 +126,6 @@ async function actualiserEtatCloche() {
 }
 
 // Récupère la position GPS actuelle de l'utilisateur, sous forme de Promise.
-// Les alertes push n'étant envoyées que dans un rayon de 5 km, on a besoin
-// de connaître la position de l'abonné au moment de l'activation.
-// Ne bloque jamais l'abonnement : en cas de refus/échec, on renvoie
-// simplement { latitude: null, longitude: null } (l'abonné ne recevra
-// alors aucune alerte push tant qu'il n'aura pas partagé sa position).
 function recupererPositionPourAbonnement() {
   return new Promise((resolve) => {
     if (!('geolocation' in navigator)) {
@@ -153,7 +148,7 @@ function recupererPositionPourAbonnement() {
 
 async function activerNotifications() {
   if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-    alert("Ton navigateur ne supporte pas les notifications push.");
+    alert("Votre navigateur ne supporte pas les notifications push.");
     return;
   }
 
@@ -171,7 +166,6 @@ async function activerNotifications() {
     });
 
     // On joint la position GPS à l'abonnement : le serveur ne notifiera cet
-    // appareil que pour les voies bloquées situées à moins de 5 km de là
     const { latitude, longitude } = await recupererPositionPourAbonnement();
     const abonnementAvecPosition = { ...subscription.toJSON(), latitude, longitude };
 
@@ -182,7 +176,7 @@ async function activerNotifications() {
     });
 
     if (latitude === null) {
-      alert("Notifications activées, mais sans ta position tu ne recevras aucune alerte. Autorise la géolocalisation pour être prévenu des voies bloquées à moins de 5 km de toi.");
+      alert("Notifications activées, mais sans votre position vous ne recevrez aucune alerte. Autorisez la géolocalisation pour être prévenu des voies bloquées autour de vous.");
     }
 
     mettreAJourClocheVisuel(true);
@@ -219,7 +213,7 @@ btnTogglePush.addEventListener('click', async (evenement) => {
   if (abonnement) {
     ouvrirModal({
       titre: 'Désactiver les alertes ?',
-      texte: 'Tu ne recevras plus de notification quand une voie est signalée bloquée.',
+      texte: 'Vous ne recevrez plus de notification quand une voie est signalée bloquée.',
       libelleActionPrincipale: 'Désactiver',
       actionPrincipale: desactiverNotifications,
       libelleActionSecondaire: 'Annuler',
@@ -228,7 +222,7 @@ btnTogglePush.addEventListener('click', async (evenement) => {
   } else {
     ouvrirModal({
       titre: 'Recevoir les alertes ?',
-      texte: "Sois prévenu dès qu'une voie est bloquée près de chez toi — même sans ouvrir l'app.",
+      texte: "Soyez prévenu dès qu'une voie est bloquée près de chez vous.",
       libelleActionPrincipale: 'Activer les notifications',
       actionPrincipale: activerNotifications,
       libelleActionSecondaire: 'Plus tard',
@@ -239,18 +233,6 @@ btnTogglePush.addEventListener('click', async (evenement) => {
 
 document.addEventListener('DOMContentLoaded', actualiserEtatCloche);
 
-// ============================================
-// Mise à jour périodique de la position (abonnés déjà actifs)
-//
-// La position n'est plus figée au seul moment de l'activation : tant que
-// les alertes push sont actives sur cet appareil, on rafraîchit la position
-// GPS régulièrement et on la renvoie au serveur. Ainsi, si l'utilisateur se
-// déplace (ex: Cotonou -> Porto-Novo), le filtre "5 km" côté serveur reste
-// basé sur sa position réelle, pas sur celle du jour de l'activation.
-// ============================================
-
-// Toutes les 5 minutes : assez souvent pour suivre un déplacement réel,
-// assez espacé pour ne pas vider la batterie ni spammer l'API
 const INTERVALLE_MAJ_POSITION_MS = 5 * 60 * 1000;
 
 async function actualiserPositionAbonnement() {
@@ -262,8 +244,6 @@ async function actualiserPositionAbonnement() {
   const { latitude, longitude } = await recupererPositionPourAbonnement();
 
   // Si la position est indisponible cette fois-ci (GPS coupé un instant,
-  // timeout...), on ne renvoie rien plutôt que d'écraser une position valide
-  // déjà enregistrée en base par un NULL
   if (latitude === null || longitude === null) return;
 
   try {
@@ -274,7 +254,6 @@ async function actualiserPositionAbonnement() {
     });
   } catch (erreur) {
     // Un échec de mise à jour n'est pas grave : l'ancienne position reste
-    // valable jusqu'au prochain essai, 5 minutes plus tard
     console.warn('Mise à jour de la position push impossible :', erreur);
   }
 }

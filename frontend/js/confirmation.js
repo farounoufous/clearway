@@ -72,10 +72,10 @@ function messageProgressionDegagee(nbDegagees, seuil) {
     return `<span class="icone-inline">${ICONE_CHECK_CERCLE}</span>Merci à tous ! La voie a été confirmée dégagée par la communauté. `;
   }
   if (nbDegagees === seuil - 1) {
-    return `<span class="icone-inline">${ICONE_PROGRESSION}</span>Presque bon ! Une dernière personne doit encore confirmer, et cette voie disparaîtra automatiquement de la liste des voies bloquées.`;
+    return `<span class="icone-inline">${ICONE_PROGRESSION}</span>Presque bon ! Une dernière personne doit encore confirmer, et cette voie disparaîtra de la liste des voies bloquées.`;
   }
   if (nbDegagees >= 1) {
-    return `<span class="icone-inline">${ICONE_COMMUNAUTE}</span> Merci pour ta confirmation ! Il faut encore ${seuil - nbDegagees} confirmations avant que cette voie soit retirée de la liste des voies bloquées.`;
+    return `<span class="icone-inline">${ICONE_COMMUNAUTE}</span> Merci pour votre confirmation ! Vous êtes la premièreà le faire. ${seuil - nbDegagees} `;
   }
   return '';
 }
@@ -101,7 +101,7 @@ function afficherContenu(details) {
   const seuilAtteint = details.nb_degagees >= details.seuil_degagees;
 
   const bandeauIncertain = details.confiance === 'incertain'
-    ? `<div class="bandeau-incertain"><span class="icone-inline">${ICONE_INFO}</span>Personne n'a reconfirmé ce signalement depuis un moment : sa fiabilité est incertaine. Si tu passes par ici, dis-nous si c'est toujours bloqué.</div>`
+    ? `<div class="bandeau-incertain"><span class="icone-inline">${ICONE_INFO}</span>Personne n'a reconfirmé ce signalement depuis un moment : sa fiabilité est incertaine.</div>`
     : '';
 
   // ---- Cas particulier : le seuil est déjà atteint -> on remplace les boutons
@@ -119,7 +119,7 @@ function afficherContenu(details) {
       <p class="message-progression">
         <span class="icone-inline">${ICONE_CHECK_CERCLE}</span>
         La communauté a confirmé que cette voie est dégagée (${details.nb_degagees}/${details.seuil_degagees}) !
-        Confirme pour la retirer définitivement de la liste.
+        Confirmez pour la retirer définitivement de la liste.
       </p>
 
       <button type="button" class="btn btn-principal" id="btn-confirmer-degagement">Confirmer et retirer de la liste</button>
@@ -146,12 +146,12 @@ function afficherContenu(details) {
     ${messagePregression ? `<p class="message-progression">${messagePregression}</p>` : ''}
 
 
-    <button type="button" class="btn btn-rouge" id="btn-toujours-bloquee">Toujours  bloquée, je confirme</button>
+    <button type="button" class="btn btn-rouge" id="btn-toujours-bloquee">Toujours bloquée, je confirme</button>
     <button type="button" class="btn btn-bleu-contour" id="btn-voie-degagee">La voie est dégagée</button>
 
     ${votes.signalement_errone
       ? '<button type="button" class="lien-discret lien-signaler-errone" disabled>Signalement transmis, merci</button>'
-      : `<button type="button" class="lien-discret lien-signaler-errone" id="btn-signaler-errone">Ce signalement te semble faux ou suspect ? Le signaler (${details.nb_errones}/${details.seuil_errone})</button>`
+      : `<button type="button" class="lien-discret lien-signaler-errone" id="btn-signaler-errone">Ce signalement vous semble faux ou suspect ? Le signaler (${details.nb_errones}/${details.seuil_errone})</button>`
     }
 
   `;
@@ -186,17 +186,6 @@ function afficherContenu(details) {
   }
 }
 
-function afficherMessageProprietaire() {
-  let bulle = document.getElementById('bulle-message-proprietaire');
-  if (!bulle) {
-    bulle = document.createElement('p');
-    bulle.id = 'bulle-message-proprietaire';
-    bulle.className = 'message-etat erreur';
-    document.getElementById('note-archivage').insertAdjacentElement('beforebegin', bulle);
-  }
-  bulle.innerHTML = `<span class="icone-inline">${ICONE_INFO}</span>Ce sont les autres utilisateurs qui peuvent confirmer ton signalement, pas toi.`;
-}
-
 function verrouillerBouton(bouton) {
   bouton.disabled = true;
   bouton.innerHTML = `<span class="icone-inline">${ICONE_CHECK}</span>Confirmation enregistrée`;
@@ -226,7 +215,7 @@ async function chargerDetails() {
     afficherContenu(details);
 
   } catch (erreur) {
-    zoneContenu.innerHTML = '<p class="etat-vide">Impossible de charger le signalement. Vérifie ta connexion.</p>';
+    zoneContenu.innerHTML = '<p class="etat-vide">Impossible de charger le signalement. Vérifiez votre connexion.</p>';
     console.error('Erreur chargement confirmation :', erreur);
   }
 }
@@ -270,7 +259,7 @@ async function envoyerAction(action, btnToujoursBloquee, btnVoieDegagee) {
 
   } catch (erreur) {
     console.error('Erreur envoi confirmation :', erreur);
-    await afficherAlerteModale('Impossible d\'envoyer ta confirmation. Vérifie ta connexion.');
+    await afficherAlerteModale('Impossible d\'envoyer votre confirmation. Vérifiez votre connexion.');
     btnToujoursBloquee.disabled = false;
     btnVoieDegagee.disabled = false;
     btnToujoursBloquee.textContent = texteOriginalToujoursBloquee;
@@ -281,7 +270,7 @@ async function envoyerAction(action, btnToujoursBloquee, btnVoieDegagee) {
 // ---- Signale ce signalement comme faux/suspect/mal placé (seuil bas : 2 avis distincts) ----
 async function signalerErrone() {
   const confirme = await afficherConfirmationModale(
-    "Ce signalement sera retiré dès 2 signalements de ce type. Confirme uniquement si tu penses vraiment qu'il est faux, spam, ou mal placé.",
+    "Confirmez si vous pensez vraiment qu'il est faux, spam, ou mal placé.",
     { titre: 'Signaler comme erroné ?', texteConfirmer: 'Oui, signaler', dangereux: true }
   );
   if (!confirme) return;
@@ -305,7 +294,7 @@ async function signalerErrone() {
     if (!reponse.ok) {
       await afficherAlerteModale(resultat.erreur || 'Une erreur est survenue.');
       bouton.disabled = false;
-      bouton.textContent = `Ce signalement te semble faux ou suspect ? Le signaler`;
+      bouton.textContent = `Ce signalement vous semble faux ou suspect ? Le signaler`;
       return;
     }
 
@@ -314,7 +303,7 @@ async function signalerErrone() {
     if (resultat.archive) {
       zoneContenu.innerHTML = `
         <div class="boite-confirmation">
-          <span class="icone-inline">${ICONE_INFO}</span>Merci, ce signalement a été retiré suite à plusieurs signalements d'erreur.
+          <span class="icone-inline">${ICONE_INFO}</span>Merci, ce signalement a été retiré suite à plusieurs signalements d'abus.
         </div>
       `;
       setTimeout(() => { window.location.href = 'voies.html'; }, 1500);
@@ -324,9 +313,9 @@ async function signalerErrone() {
 
   } catch (erreur) {
     console.error('Erreur signalement erroné :', erreur);
-    await afficherAlerteModale('Impossible d\'envoyer ton signalement. Vérifie ta connexion.');
+    await afficherAlerteModale('Impossible d\'envoyer votre signalement. Vérifie votre connexion.');
     bouton.disabled = false;
-    bouton.textContent = `Ce signalement te semble faux ou suspect ? Le signaler`;
+    bouton.textContent = `Ce signalement vous semble faux ou suspect ? Le signaler`;
   }
 }
 
@@ -372,7 +361,7 @@ async function confirmerArchivageDefinitif() {
 
   } catch (erreur) {
     console.error('Erreur confirmation archivage :', erreur);
-    await afficherAlerteModale('Impossible d\'envoyer ta confirmation. Vérifie ta connexion.');
+    await afficherAlerteModale('Impossible d\'envoyer votre confirmation. Vérifiez votre connexion.');
     bouton.disabled = false;
     bouton.textContent = 'Confirmer et retirer de la liste';
   }

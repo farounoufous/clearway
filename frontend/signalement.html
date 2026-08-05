@@ -48,12 +48,12 @@
           </button>
         </div>
 
-        <p class="note-info">Ta position sera visible par les autres utilisateurs pour les aider à repérer l'obstacle précisément.</p>
+        <p class="note-info">En partageant votre position, elle sera visible par la communauté pour l'aider à repérer l'obstacle précisément.</p>
         <p class="note-info" id="statut-geolocalisation" hidden></p>
 
         <div class="champ champ-conditionnel" id="bloc-quartier-manuel" hidden>
           <label for="quartier-manuel">Quartier (non détecté automatiquement)</label>
-          <input type="text" id="quartier-manuel" placeholder="Précise ton quartier">
+          <input type="text" id="quartier-manuel" placeholder="Précisez votre quartier">
         </div>
 
         <input type="hidden" id="champ-latitude" name="latitude">
@@ -89,12 +89,12 @@
       </div>
 
       <div class="champ">
-        <label for="description">Description <span class="requis">*</span></label>
-        <textarea id="description" name="description" placeholder="Décris brièvement la situation..." required></textarea>
+        <label for="description">Description</label>
+        <textarea id="description" name="description" placeholder="Décrivez brièvement la situation..."></textarea>
       </div>
 
       <div class="champ">
-        <label for="photo">Photo du dégât <span class="requis">*</span></label>
+        <label for="photo">Photo de l'obstacle <span class="requis">*</span></label>
         <input type="file" id="photo" name="photo" accept="image/jpeg,image/png,image/webp" required>
         <div id="apercu-photo"></div>
       </div>
@@ -118,7 +118,7 @@
 
     <div id="carte-leaflet"></div>
 
-    <p class="note-info" id="statut-carte">Déplace la carte ou le marqueur, ou recherche un lieu ci-dessus.</p>
+    <p class="note-info" id="statut-carte">Déplacez la carte ou le marqueur, ou recherchez un lieu ci-dessus.</p>
 
     <button type="button" class="btn btn-principal" id="btn-confirmer-carte" disabled>Confirmer la position</button>
   </div>

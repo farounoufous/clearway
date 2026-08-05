@@ -1,15 +1,3 @@
-// ============================================
-// ClearWay Bénin - Modale de confirmation/alerte générique
-//
-// Remplace les confirm()/alert() natifs du navigateur (moches, non
-// stylisables, bloquants) par une vraie carte sur fond flouté, cohérente
-// avec le reste du design de l'app (mêmes boutons, mêmes couleurs).
-//
-// Usage :
-//   const ok = await afficherConfirmationModale('Message...', { titre: '...', dangereux: true });
-//   await afficherAlerteModale('Message...', 'Titre optionnel');
-// ============================================
-
 function afficherModal({ titre, message, texteConfirmer = 'Confirmer', texteAnnuler = 'Annuler', dangereux = false, alerteSeule = false }) {
   return new Promise((resolve) => {
     const overlay = document.createElement('div');

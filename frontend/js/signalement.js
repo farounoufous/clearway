@@ -1,5 +1,4 @@
 // Déclaré via window pour rester cohérent avec les autres pages et éviter
-// tout conflit si un autre script venait à être ajouté sur cette page
 window.API_BASE = window.API_BASE || 'https://clearway-production-6e27.up.railway.app/api';
 
 
@@ -42,24 +41,12 @@ const rechercheLieu = document.getElementById('recherche-lieu');
 const resultatsRechercheLieu = document.getElementById('resultats-recherche-lieu');
 const statutCarte = document.getElementById('statut-carte');
 
-// Point choisi par l'utilisateur (GPS ou carte), envoyé avec le formulaire.
-// C'est la seule source de localisation désormais (plus de liste de zones) :
-// { latitude, longitude, accuracy, source: 'GPS'|'CARTE', pays, ville, quartier, adresse_formatee }
 let position = null;
-
-// Instance Leaflet créée à la première ouverture de la modale, puis réutilisée
-// (Leaflet ne supporte pas d'être ré-initialisé sur un conteneur déjà utilisé)
 let carteLeaflet = null;
 let marqueurCarte = null;
-
-// Résultat du dernier géocodage inversé fait pendant qu'on déplace le marqueur
-// dans la modale, en attente d'un clic sur "Confirmer la position"
 let resultatEnAttenteCarte = null;
 
 let minuterieRecherche = null;
-
-// Centre par défaut de la carte (Cotonou / Abomey-Calavi) si l'utilisateur
-// n'a pas encore de position connue
 const CENTRE_PAR_DEFAUT = [6.3703, 2.3912];
 
 // ---- 2. Gestion du sélecteur de gravité (3 boutons) ----
@@ -78,15 +65,6 @@ selectTypeObstacle.addEventListener('change', () => {
   champTypePersonnalise.required = estAutre;
   if (!estAutre) champTypePersonnalise.value = '';
 });
-
-// ---- 2bis. Compression + aperçu de la photo sélectionnée ----
-//
-// Les photos de smartphone modernes pèsent 3-8 Mo. Sur une connexion mobile
-// limitée (contexte courant à Cotonou/Abomey-Calavi), forcer l'envoi de ça
-// pour signaler une route inondée est un vrai frein à l'usage, surtout dans
-// l'urgence. On redimensionne et recompresse via <canvas> avant l'envoi :
-// ~1280px de large et qualité JPEG 0.72 suffisent largement pour identifier
-// un obstacle sur une photo, et ça fait passer le poids à 100-300 Ko.
 let photoAEnvoyer = null; // fichier réellement envoyé au serveur (compressé, ou original si la compression échoue)
 
 function compresserImage(fichier, largeurMax = 1280, qualite = 0.72) {
@@ -117,7 +95,7 @@ function compresserImage(fichier, largeurMax = 1280, qualite = 0.72) {
 
     img.onerror = () => {
       URL.revokeObjectURL(url);
-      resolve(fichier); // fichier illisible comme image -> laissé tel quel, la validation serveur tranchera
+      resolve(fichier);
     };
 
     img.src = url;
@@ -130,8 +108,6 @@ champPhoto.addEventListener('change', async () => {
   const fichier = champPhoto.files[0];
   if (!fichier) return;
 
-  // Limite d'entrée plus large qu'avant : la compression se charge de ramener
-  // ça à une taille raisonnable, pas la peine de bloquer une photo un peu lourde
   const tailleMaxOctets = 10 * 1024 * 1024; // 10 Mo
   if (fichier.size > tailleMaxOctets) {
     afficherMessage('La photo est trop lourde (max 10 Mo).', 'erreur');
@@ -150,15 +126,7 @@ champPhoto.addEventListener('change', async () => {
 
 const ICONE_LOCALISATION = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z"></path><circle cx="12" cy="10" r="3"></circle></svg>';
 
-// ============================================
 // 3. Géocodage (Nominatim / OpenStreetMap)
-//
-// Politique d'usage Nominatim : pas plus d'~1 requête par seconde et pas
-// d'usage intensif en production sans routage vers une instance dédiée.
-// Suffisant ici (le géocodage n'est déclenché que sur une action explicite
-// de l'utilisateur : clic GPS, glisser le marqueur, ou recherche).
-// ============================================
-
 async function geocodageInverse(latitude, longitude) {
   try {
     const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`;
@@ -189,11 +157,7 @@ async function rechercheLieux(requete) {
     return [];
   }
 }
-
-// ============================================
 // 4. Affichage de la position confirmée (remplace les 2 boutons)
-// ============================================
-
 function afficherStatutGeolocalisation(texte, type) {
   statutGeolocalisation.textContent = texte;
   statutGeolocalisation.className = `note-info ${type}`;
@@ -260,13 +224,10 @@ champQuartierManuel.addEventListener('input', () => {
   champQuartier.value = champQuartierManuel.value.trim();
 });
 
-// ============================================
 // 5. "Utiliser ma position" (géolocalisation du navigateur)
-// ============================================
-
 btnGeolocalisation.addEventListener('click', () => {
   if (!('geolocation' in navigator)) {
-    afficherStatutGeolocalisation("Ton navigateur ne supporte pas la géolocalisation.", 'erreur');
+    afficherStatutGeolocalisation("Votre navigateur ne supporte pas la géolocalisation.", 'erreur');
     return;
   }
 
@@ -285,9 +246,9 @@ btnGeolocalisation.addEventListener('click', () => {
     (erreur) => {
       // On ne bloque jamais le formulaire : on propose simplement l'autre méthode
       const messages = {
-        1: 'Position refusée — pas de souci, choisis un point sur la carte à la place.',
-        2: 'Position indisponible pour le moment — choisis un point sur la carte.',
-        3: 'La localisation a pris trop de temps — choisis un point sur la carte.',
+        1: 'Position refusée ? pas de souci, choisisez un point sur la carte à la place.',
+        2: 'Position indisponible pour le moment — choisisez un point sur la carte.',
+        3: 'La localisation a pris trop de temps — choisisez un point sur la carte.',
       };
       afficherStatutGeolocalisation(messages[erreur.code] || 'Géolocalisation impossible.', 'erreur');
       btnGeolocalisation.disabled = false;
@@ -433,9 +394,6 @@ function afficherMessage(texte, type) {
 }
 
 // ---- 7ter. Vérification des doublons possibles avant l'envoi (Option B) ----
-// On ne fusionne JAMAIS automatiquement : on propose juste à l'utilisateur
-// de confirmer un signalement existant proche, ou de continuer le sien s'il
-// juge que c'est vraiment un problème différent.
 let ignorerVerificationDoublon = false;
 
 async function chercherDoublonsPossibles(latitude, longitude) {
@@ -456,12 +414,9 @@ async function afficherChoixDoublon(doublons) {
   const distanceTexte = plusProche.distance_m < 1
     ? 'au même endroit'
     : `à environ ${plusProche.distance_m} m`;
-  const nonConfirme = plusProche.confiance === 'incertain'
-    ? ' <span class="badge-incertain">Non confirmé</span>'
-    : '';
 
   const confirme = await afficherConfirmationModale(
-    `${plusProche.zone} — ${plusProche.type_obstacle.toLowerCase()} ${plusProche.gravite_label}, créé il y a ${plusProche.depuis}${nonConfirme}<br><br><strong>Est-ce le même problème que celui que tu veux signaler ?</strong>`,
+    `${plusProche.zone} — ${plusProche.type_obstacle.toLowerCase()} ${plusProche.gravite_label}, créé il y a ${plusProche.depuis}${nonConfirme}<br><br><strong>Est-ce le même problème que celui que vous voulez signaler ?</strong>`,
     {
       titre: `Un signalement existe déjà ${distanceTexte}`,
       texteConfirmer: 'Oui, confirmer celui-ci',
@@ -498,7 +453,7 @@ form.addEventListener('submit', async (evenement) => {
   messageZone.innerHTML = '';
 
   if (!position) {
-    afficherMessage('Choisis d\'abord ton emplacement : "Utiliser ma position" ou "Choisir sur la carte".', 'erreur');
+    afficherMessage('Choisissez d\'abord votre emplacement !', 'erreur');
     return;
   }
 
@@ -575,7 +530,7 @@ form.addEventListener('submit', async (evenement) => {
 
   } catch (erreur) {
     console.error('Erreur envoi du signalement :', erreur);
-    afficherMessage('Impossible d\'envoyer le signalement. Vérifie ta connexion.', 'erreur');
+    afficherMessage('Impossible d\'envoyer le signalement. Vérifiez votre connexion.', 'erreur');
   } finally {
     btnEnvoyer.disabled = false;
     btnEnvoyer.textContent = 'Envoyer le signalement';

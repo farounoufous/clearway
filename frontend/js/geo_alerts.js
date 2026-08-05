@@ -1,21 +1,7 @@
-// ============================================
-// ClearWay Bénin - Alertes par rayon de 5 km
-//
-// Récupère la position GPS actuelle de l'utilisateur via l'API native du
-// navigateur, puis interroge le backend (get_nearby_incidents.php) pour
-// afficher les voies bloquées confirmées à moins de 5 km.
-//
-// Ce script est autonome : il ne fait rien s'il ne trouve pas son
-// conteneur HTML (#liste-alertes-proximite) sur la page, ce qui permet de
-// l'inclure partout sans risque de casser une page qui ne l'utilise pas.
-// ============================================
-
 window.API_BASE = window.API_BASE || 'https://clearway-production-6e27.up.railway.app/api';
 
 // Id de l'élément HTML dans lequel les alertes seront injectées
 const ID_CONTENEUR_ALERTES = 'liste-alertes-proximite';
-
-// ---- Petits utilitaires d'affichage (état de chargement / erreur / vide) ----
 
 function afficherChargement(conteneur) {
   conteneur.innerHTML = '<p class="etat-vide">Recherche des voies bloquées autour de vous…</p>';
@@ -81,7 +67,7 @@ async function recupererIncidentsProches(latitude, longitude, conteneur) {
 
   } catch (erreur) {
     console.error('Erreur récupération des voies bloquées à proximité :', erreur);
-    afficherMessage(conteneur, "Impossible de charger les voies bloquées à proximité. Vérifie ta connexion et réessaie.");
+    afficherMessage(conteneur, "Impossible de charger les voies bloquées à proximité. Vérifie votre connexion et réessayez.");
   }
 }
 
@@ -95,7 +81,7 @@ async function fetchNearbyIncidents() {
 
   // Le navigateur ne supporte pas du tout la géolocalisation
   if (!('geolocation' in navigator)) {
-    afficherMessage(conteneur, "Ton navigateur ne permet pas la géolocalisation. Active-la ou utilise un navigateur récent.");
+    afficherMessage(conteneur, "Votre navigateur ne permet pas la géolocalisation. Activez-la ou utilisez un navigateur récent.");
     return;
   }
 
@@ -113,16 +99,16 @@ async function fetchNearbyIncidents() {
       let message;
       switch (erreur.code) {
         case erreur.PERMISSION_DENIED:
-          message = "Tu as refusé le partage de ta position. Active la géolocalisation dans les réglages de ton navigateur pour voir les voies bloquées près de toi.";
+          message = "Vous avez refusé le partage de votre position. Activez la géolocalisation pour voir les voies bloquées près de vous.";
           break;
         case erreur.POSITION_UNAVAILABLE:
-          message = "Ta position n'a pas pu être déterminée pour le moment. Réessaie dans quelques instants.";
+          message = "Votre position n'a pas pu être déterminée pour le moment. Réessayez dans quelques instants.";
           break;
         case erreur.TIMEOUT:
-          message = "La recherche de ta position a pris trop de temps. Réessaie.";
+          message = "La recherche de votre position a pris trop de temps. Réessayez.";
           break;
         default:
-          message = "Une erreur est survenue lors de la récupération de ta position.";
+          message = "Une erreur est survenue lors de la récupération de votre position.";
       }
       console.error('Erreur géolocalisation :', erreur);
       afficherMessage(conteneur, message);

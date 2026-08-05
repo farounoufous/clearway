@@ -1,10 +1,4 @@
-// Déclaré via window pour rester cohérent avec les autres pages et éviter
-// tout conflit si un autre script venait à être ajouté sur cette page
 window.API_BASE = window.API_BASE || 'https://clearway-production-6e27.up.railway.app/api';
-
-
-// Même clé que sur l'accueil : un signalement vu sur un écran
-// ne réaffichera plus son badge "Nouveau" nulle part dans l'app
 const CLE_SIGNALEMENTS_VUS = 'clearway_signalements_vus';
 
 function recupererSignalementsVus() {
@@ -42,7 +36,7 @@ function afficherVoies(voies) {
   const listeEl = document.getElementById('liste-voies');
 
   if (voies.length === 0) {
-    listeEl.innerHTML = '<p class="etat-vide">Aucune voie ne correspond à ta recherche.</p>';
+    listeEl.innerHTML = '<p class="etat-vide">Aucune voie ne correspond à votre recherche.</p>';
     return;
   }
 
@@ -51,7 +45,7 @@ function afficherVoies(voies) {
   listeEl.innerHTML = voies.map(v => {
     const afficherBadge = v.est_nouveau && !vus.includes(v.id);
     const miniBarre = v.nb_degagees > 0
-      ? `<div class="mini-progression" title="${v.nb_degagees}/3 confirmations 'voie dégagée'">
+      ? `<div class="mini-progression" title="${v.nb_degagees} sur 3 confirmations 'Voie dégagée'">
            <div class="mini-progression-piste"><div class="mini-progression-remplissage" style="width:${v.progression_degagee}%"></div></div>
          </div>`
       : '';
@@ -100,7 +94,7 @@ async function chargerVoies() {
     afficherVoies(toutesLesVoies);
 
   } catch (erreur) {
-    listeEl.innerHTML = '<p class="etat-vide">Impossible de charger les voies. Vérifie ta connexion.</p>';
+    listeEl.innerHTML = '<p class="etat-vide">Impossible de charger les voies. Vérifiez votre connexion.</p>';
     console.error('Erreur chargement voies :', erreur);
   }
 }

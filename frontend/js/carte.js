@@ -217,7 +217,7 @@ carte.on('locationfound', (evenement) => {
 
 carte.on('locationerror', () => {
   boutonLocaliser.classList.remove('en-cours');
-  afficherAlerteModale('Impossible de te localiser. Vérifie que la géolocalisation est autorisée pour ce site, puis réessaie.');
+  afficherAlerteModale('Impossible de vous localiser. Vérifiez que la géolocalisation est autorisée pour ce site, puis réessayez.');
 });
 
 // ---- Chargement initial + rafraîchissement périodique (même logique que l'accueil) ----

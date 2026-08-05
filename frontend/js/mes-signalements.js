@@ -17,8 +17,7 @@ async function chargerMesSignalements() {
   if (ids.length === 0) {
     listeEl.innerHTML = `
       <p class="etat-vide">
-        Tu n'as pas encore créé de signalement sur cet appareil.<br>
-        Dès que tu en signales un, il apparaîtra ici.
+        Vous n'avez pas encore créé de signalement sur cet appareil.<br>
       </p>
     `;
     return;
@@ -30,7 +29,7 @@ async function chargerMesSignalements() {
     const signalements = await reponse.json();
 
     if (signalements.length === 0) {
-      listeEl.innerHTML = '<p class="etat-vide">Aucun de tes signalements n\'a pu être retrouvé.</p>';
+      listeEl.innerHTML = '<p class="etat-vide">Aucun de vos signalements n\'a pu être retrouvé.</p>';
       return;
     }
 
@@ -54,7 +53,7 @@ async function chargerMesSignalements() {
     });
 
   } catch (erreur) {
-    listeEl.innerHTML = '<p class="etat-vide">Impossible de charger tes signalements. Vérifie ta connexion.</p>';
+    listeEl.innerHTML = '<p class="etat-vide">Impossible de charger vos signalements. Vérifie votre connexion.</p>';
     console.error('Erreur chargement mes signalements :', erreur);
   }
 }

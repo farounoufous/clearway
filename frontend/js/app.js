@@ -74,7 +74,7 @@ async function chargerAccueil(rafraichissementSilencieux = false) {
   } catch (erreur) {
     // Un rafraîchissement silencieux qui échoue ne doit pas effacer la liste déjà affichée
     if (!rafraichissementSilencieux) {
-      listeEl.innerHTML = '<p class="etat-vide">Impossible de charger les signalements. Vérifie ta connexion.</p>';
+      listeEl.innerHTML = '<p class="etat-vide">Impossible de charger les signalements. Vérifiez votre connexion!</p>';
     }
     console.error('Erreur chargement accueil :', erreur);
   }
