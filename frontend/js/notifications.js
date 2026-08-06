@@ -13,14 +13,14 @@ const overlay = document.getElementById('modal-notif-overlay');
 const modalTitre = document.getElementById('modal-notif-titre');
 const modalTexte = document.getElementById('modal-notif-texte');
 
-// Convertit la clé VAPID (base64url) en Uint8Array, format attendu par pushManager.subscribe
+// Convertit la clé VAPID (base64url) en Uint8Array
 function urlBase64VersUint8Array(base64String) {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
   const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
   const rawData = window.atob(base64);
   return Uint8Array.from([...rawData].map(char => char.charCodeAt(0)));
 }
-// Panneau de notifications (clic sur la cloche)
+// Panneau de notification
 function formaterDateRelative(dateIso) {
   const diffMinutes = Math.max(0, Math.floor((Date.now() - new Date(dateIso).getTime()) / 60000));
   if (diffMinutes < 1) return "à l'instant";
@@ -69,7 +69,6 @@ btnCloche.addEventListener('click', (evenement) => {
 
 btnFermerPanneau.addEventListener('click', fermerPanneauNotifications);
 
-// Ferme le panneau si on clique en dehors
 document.addEventListener('click', (evenement) => {
   if (!panneauNotifications.hidden && !panneauNotifications.contains(evenement.target) && evenement.target !== btnCloche) {
     fermerPanneauNotifications();
@@ -124,8 +123,6 @@ async function actualiserEtatCloche() {
   mettreAJourClocheVisuel(!!abonnement);
   return abonnement;
 }
-
-// Récupère la position GPS actuelle de l'utilisateur, sous forme de Promise.
 function recupererPositionPourAbonnement() {
   return new Promise((resolve) => {
     if (!('geolocation' in navigator)) {
@@ -165,7 +162,6 @@ async function activerNotifications() {
       applicationServerKey: urlBase64VersUint8Array(VAPID_CLE_PUBLIQUE),
     });
 
-    // On joint la position GPS à l'abonnement : le serveur ne notifiera cet
     const { latitude, longitude } = await recupererPositionPourAbonnement();
     const abonnementAvecPosition = { ...subscription.toJSON(), latitude, longitude };
 
@@ -213,7 +209,7 @@ btnTogglePush.addEventListener('click', async (evenement) => {
   if (abonnement) {
     ouvrirModal({
       titre: 'Désactiver les alertes ?',
-      texte: 'Vous ne recevrez plus de notification quand une voie est signalée bloquée.',
+      texte: 'Vous ne recevrez plus de notification quand une voie sera signalée bloquée.',
       libelleActionPrincipale: 'Désactiver',
       actionPrincipale: desactiverNotifications,
       libelleActionSecondaire: 'Annuler',
@@ -238,12 +234,10 @@ const INTERVALLE_MAJ_POSITION_MS = 5 * 60 * 1000;
 async function actualiserPositionAbonnement() {
   const abonnement = await obtenirAbonnementActuel();
 
-  // Rien à faire si les alertes push ne sont pas activées sur cet appareil
   if (!abonnement) return;
 
   const { latitude, longitude } = await recupererPositionPourAbonnement();
 
-  // Si la position est indisponible cette fois-ci (GPS coupé un instant,
   if (latitude === null || longitude === null) return;
 
   try {
@@ -253,14 +247,11 @@ async function actualiserPositionAbonnement() {
       body: JSON.stringify({ ...abonnement.toJSON(), latitude, longitude }),
     });
   } catch (erreur) {
-    // Un échec de mise à jour n'est pas grave : l'ancienne position reste
     console.warn('Mise à jour de la position push impossible :', erreur);
   }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  // Une actualisation dès l'ouverture de la page (utile si l'utilisateur a
-  // changé de zone depuis sa dernière visite), puis en tâche de fond ensuite
   actualiserPositionAbonnement();
   setInterval(actualiserPositionAbonnement, INTERVALLE_MAJ_POSITION_MS);
 });

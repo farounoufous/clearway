@@ -1,6 +1,4 @@
-// Déclaré via window pour rester cohérent avec les autres pages et éviter
 window.API_BASE = window.API_BASE || 'https://clearway-production-6e27.up.railway.app/api';
-
 
 const selecteurGravite = document.getElementById('selecteur-gravite');
 const champGravite = document.getElementById('gravite');
@@ -12,7 +10,6 @@ const apercuPhoto = document.getElementById('apercu-photo');
 const selectTypeObstacle = document.getElementById('type-obstacle');
 const champTypePersonnalise = document.getElementById('type-obstacle-personnalise');
 
-// ---- Éléments de l'emplacement (GPS / carte) ----
 const boutonsPosition = document.getElementById('boutons-position');
 const btnGeolocalisation = document.getElementById('btn-geolocalisation');
 const btnChoisirCarte = document.getElementById('btn-choisir-carte');
@@ -33,7 +30,6 @@ const champVille = document.getElementById('champ-ville');
 const champQuartier = document.getElementById('champ-quartier');
 const champAdresseFormatee = document.getElementById('champ-adresse-formatee');
 
-// ---- Éléments de la modale "Choisir sur la carte" ----
 const modalCarte = document.getElementById('modal-carte');
 const btnFermerCarte = document.getElementById('btn-fermer-carte');
 const btnConfirmerCarte = document.getElementById('btn-confirmer-carte');
@@ -49,7 +45,6 @@ let resultatEnAttenteCarte = null;
 let minuterieRecherche = null;
 const CENTRE_PAR_DEFAUT = [6.3703, 2.3912];
 
-// ---- 2. Gestion du sélecteur de gravité (3 boutons) ----
 selecteurGravite.addEventListener('click', (evenement) => {
   const bouton = evenement.target.closest('button');
   if (!bouton) return;
@@ -65,7 +60,7 @@ selectTypeObstacle.addEventListener('change', () => {
   champTypePersonnalise.required = estAutre;
   if (!estAutre) champTypePersonnalise.value = '';
 });
-let photoAEnvoyer = null; // fichier réellement envoyé au serveur (compressé, ou original si la compression échoue)
+let photoAEnvoyer = null;
 
 function compresserImage(fichier, largeurMax = 1280, qualite = 0.72) {
   return new Promise((resolve) => {
@@ -74,8 +69,6 @@ function compresserImage(fichier, largeurMax = 1280, qualite = 0.72) {
 
     img.onload = () => {
       URL.revokeObjectURL(url);
-
-      // On ne réduit jamais une image déjà plus petite que la largeur max
       const ratio = Math.min(1, largeurMax / img.width);
       const canvas = document.createElement('canvas');
       canvas.width = Math.round(img.width * ratio);
@@ -88,7 +81,7 @@ function compresserImage(fichier, largeurMax = 1280, qualite = 0.72) {
         if (blob) {
           resolve(new File([blob], 'signalement.jpg', { type: 'image/jpeg' }));
         } else {
-          resolve(fichier); // échec de l'encodage -> on envoie l'original plutôt que de bloquer l'utilisateur
+          resolve(fichier);
         }
       }, 'image/jpeg', qualite);
     };
@@ -108,9 +101,9 @@ champPhoto.addEventListener('change', async () => {
   const fichier = champPhoto.files[0];
   if (!fichier) return;
 
-  const tailleMaxOctets = 10 * 1024 * 1024; // 10 Mo
+  const tailleMaxOctets = 5 * 1024 * 1024; 
   if (fichier.size > tailleMaxOctets) {
-    afficherMessage('La photo est trop lourde (max 10 Mo).', 'erreur');
+    afficherMessage('La photo est trop lourde (max 5 Mo).', 'erreur');
     champPhoto.value = '';
     return;
   }
@@ -157,7 +150,6 @@ async function rechercheLieux(requete) {
     return [];
   }
 }
-// 4. Affichage de la position confirmée (remplace les 2 boutons)
 function afficherStatutGeolocalisation(texte, type) {
   statutGeolocalisation.textContent = texte;
   statutGeolocalisation.className = `note-info ${type}`;
@@ -218,13 +210,10 @@ function reinitialiserPosition() {
 
 btnModifierPosition.addEventListener('click', reinitialiserPosition);
 
-// Si l'utilisateur précise son quartier manuellement (géocodage muet), on le
-// répercute en direct dans le champ cache envoyé au serveur
 champQuartierManuel.addEventListener('input', () => {
   champQuartier.value = champQuartierManuel.value.trim();
 });
 
-// 5. "Utiliser ma position" (géolocalisation du navigateur)
 btnGeolocalisation.addEventListener('click', () => {
   if (!('geolocation' in navigator)) {
     afficherStatutGeolocalisation("Votre navigateur ne supporte pas la géolocalisation.", 'erreur');
@@ -244,7 +233,6 @@ btnGeolocalisation.addEventListener('click', () => {
       afficherPositionConfirmee();
     },
     (erreur) => {
-      // On ne bloque jamais le formulaire : on propose simplement l'autre méthode
       const messages = {
         1: 'Position refusée ? pas de souci, choisisez un point sur la carte à la place.',
         2: 'Position indisponible pour le moment — choisisez un point sur la carte.',
@@ -257,10 +245,6 @@ btnGeolocalisation.addEventListener('click', () => {
     { timeout: 8000, maximumAge: 60000 }
   );
 });
-
-// ============================================
-// 6. "Choisir sur la carte" (modale Leaflet / OpenStreetMap)
-// ============================================
 
 function initCarteLeaflet() {
   const centreDepart = position ? [position.latitude, position.longitude] : CENTRE_PAR_DEFAUT;
@@ -305,8 +289,6 @@ async function gererDeplacementMarqueur(lat, lon) {
 function ouvrirModalCarte() {
   modalCarte.hidden = false;
 
-  // Attend que le conteneur soit visible (donc dimensionné) avant que Leaflet
-  // ne mesure sa taille — sinon la carte s'affiche rognée dans un coin
   requestAnimationFrame(() => {
     if (!carteLeaflet) {
       initCarteLeaflet();
@@ -332,7 +314,6 @@ function fermerModalCarte() {
 btnChoisirCarte.addEventListener('click', ouvrirModalCarte);
 btnFermerCarte.addEventListener('click', fermerModalCarte);
 
-// Ferme la modale si on clique sur le fond sombre (en dehors de la carte)
 modalCarte.addEventListener('click', (evenement) => {
   if (evenement.target === modalCarte) fermerModalCarte();
 });
@@ -344,7 +325,6 @@ btnConfirmerCarte.addEventListener('click', () => {
   afficherPositionConfirmee();
 });
 
-// ---- Recherche de lieu (avec anti-rebond pour respecter Nominatim) ----
 rechercheLieu.addEventListener('input', () => {
   clearTimeout(minuterieRecherche);
   const requete = rechercheLieu.value.trim();
@@ -388,12 +368,10 @@ function afficherResultatsRecherche(resultats) {
   resultatsRechercheLieu.hidden = false;
 }
 
-// ---- 7. Affichage des messages de succès/erreur ----
 function afficherMessage(texte, type) {
   messageZone.innerHTML = `<div class="message-etat ${type}">${texte}</div>`;
 }
 
-// ---- 7ter. Vérification des doublons possibles avant l'envoi (Option B) ----
 let ignorerVerificationDoublon = false;
 
 async function chercherDoublonsPossibles(latitude, longitude) {
@@ -405,7 +383,7 @@ async function chercherDoublonsPossibles(latitude, longitude) {
     return donnees.doublons_possibles || [];
   } catch (erreur) {
     console.error('Vérification des doublons impossible (on continue quand même) :', erreur);
-    return []; // en cas d'erreur réseau, on n'empêche pas l'utilisateur de signaler
+    return [];
   }
 }
 
@@ -418,7 +396,7 @@ async function afficherChoixDoublon(doublons) {
   const confirme = await afficherConfirmationModale(
     `${plusProche.zone} — ${plusProche.type_obstacle.toLowerCase()} ${plusProche.gravite_label}, créé il y a ${plusProche.depuis}${nonConfirme}<br><br><strong>Est-ce le même problème que celui que vous voulez signaler ?</strong>`,
     {
-      titre: `Un signalement existe déjà ${distanceTexte}`,
+      titre: `Il semble que ce signalement existe déjà ${distanceTexte}`,
       texteConfirmer: 'Oui, confirmer celui-ci',
       texteAnnuler: "Non, c'est différent",
     }
@@ -432,8 +410,6 @@ async function afficherChoixDoublon(doublons) {
   }
 }
 
-// ---- 7bis. Mémorise ce signalement comme étant "le mien" (écran "Mes signalements") ----
-// Pas de compte utilisateur : on garde juste l'ID dans le navigateur
 const CLE_MES_SIGNALEMENTS = 'clearway_mes_signalements';
 
 function marquerCommeMonSignalement(id) {
@@ -447,7 +423,6 @@ function marquerCommeMonSignalement(id) {
   }
 }
 
-// ---- 8. Envoi du formulaire (FormData car il peut contenir un fichier) ----
 form.addEventListener('submit', async (evenement) => {
   evenement.preventDefault();
   messageZone.innerHTML = '';
@@ -457,12 +432,10 @@ form.addEventListener('submit', async (evenement) => {
     return;
   }
 
-  // Si le quartier n'a pas été détecté automatiquement, on prend la saisie manuelle
   if (!position.quartier && champQuartierManuel.value.trim() !== '') {
     champQuartier.value = champQuartierManuel.value.trim();
   }
 
-  // ---- Vérification des doublons possibles (une seule fois par tentative) ----
   if (!ignorerVerificationDoublon) {
     btnEnvoyer.disabled = true;
     btnEnvoyer.textContent = 'Vérification...';
@@ -472,10 +445,10 @@ form.addEventListener('submit', async (evenement) => {
 
     if (doublons.length > 0) {
       await afficherChoixDoublon(doublons);
-      return; // on attend le choix de l'utilisateur (cf. afficherChoixDoublon)
+      return;
     }
   }
-  ignorerVerificationDoublon = false; // reset pour la prochaine fois
+  ignorerVerificationDoublon = false;
 
   const donnees = new FormData();
   donnees.append('type_obstacle', document.getElementById('type-obstacle').value);
@@ -500,7 +473,7 @@ form.addEventListener('submit', async (evenement) => {
   try {
     const reponse = await fetch(`${window.API_BASE}/signalement.php`, {
       method: 'POST',
-      body: donnees, // pas de header Content-Type : le navigateur le fixe lui-même (multipart + boundary)
+      body: donnees,
     });
 
     const resultat = await reponse.json();
@@ -521,8 +494,6 @@ form.addEventListener('submit', async (evenement) => {
     selecteurGravite.querySelector('[data-valeur="Modere"]').classList.add('actif');
     champGravite.value = 'Modere';
 
-    // Repart de zéro sur la localisation : évite de renvoyer silencieusement
-    // une position périmée si l'utilisateur signale une 2e voie dans la foulée
     reinitialiserPosition();
 
     // Retour à l'accueil après un court délai

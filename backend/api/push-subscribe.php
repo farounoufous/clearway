@@ -1,11 +1,9 @@
 <?php
-
-header("Access-Control-Allow-Origin: https://clearway-phi.vercel.app"); // ⚠️ REMPLACEZ par votre vraie URL Vercel
+header("Access-Control-Allow-Origin: https://clearway-phi.vercel.app"); 
 header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
 header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE");
 header("Access-Control-Allow-Credentials: true");
 
-// Si c'est une requête de pré-vérification (OPTIONS), on arrête le script immédiatement
 if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     exit(0);
 }
@@ -39,7 +37,6 @@ if ($methode === 'POST') {
         $longitude = null;
     }
 
-    // INSERT ... ON DUPLICATE KEY : évite les doublons si le navigateur se réabonne
     $stmt = $pdo->prepare("
         INSERT INTO push_subscriptions (endpoint, p256dh, auth_secret, latitude, longitude, date_creation)
         VALUES (?, ?, ?, ?, ?, NOW())

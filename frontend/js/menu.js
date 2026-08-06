@@ -22,7 +22,6 @@ if (btnMenu) {
 
   btnFermerMenu.addEventListener('click', fermerMenu);
 
-  // Ferme le panneau si on clique en dehors
   document.addEventListener('click', (evenement) => {
     if (!menuLateral.hidden && !menuLateral.contains(evenement.target) && evenement.target !== btnMenu) {
       fermerMenu();

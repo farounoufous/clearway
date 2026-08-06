@@ -1,6 +1,4 @@
 window.API_BASE = window.API_BASE || 'https://clearway-production-6e27.up.railway.app/api';
-
-// Id de l'élément HTML dans lequel les alertes seront injectées
 const ID_CONTENEUR_ALERTES = 'liste-alertes-proximite';
 
 function afficherChargement(conteneur) {
@@ -10,16 +8,12 @@ function afficherChargement(conteneur) {
 function afficherMessage(conteneur, message) {
   conteneur.innerHTML = `<p class="etat-vide">${message}</p>`;
 }
-
-// ---- Construit une carte d'alerte pour un incident reçu de l'API ----
-
 function construireCarteAlerte(incident) {
   const distanceTexte = `à ${incident.distance_km.toFixed(1).replace('.', ',')} km`;
   const badgeIncertain = incident.confiance === 'incertain'
     ? '<span class="badge-incertain">Non confirmé</span>'
     : '';
 
-  // Utilisation de la classe maîtresse '.carte-voie' pour calquer le design de l'accueil, les effets de survol et le pointeur.
   return `
     <a href="confirmation.html?id=${incident.id}" class="carte-voie ${incident.gravite_classe}" data-id="${incident.id}">
       <div class="nom-zone">
@@ -33,10 +27,6 @@ function construireCarteAlerte(incident) {
   `;
 }
 
-
-
-// ---- Affiche la liste complète des incidents reçus dans le conteneur ----
-
 function afficherIncidents(conteneur, incidents) {
   if (!incidents || incidents.length === 0) {
     afficherMessage(conteneur, 'Aucune voie bloquée autour de vous dans un rayon de 5 km.');
@@ -46,7 +36,6 @@ function afficherIncidents(conteneur, incidents) {
   conteneur.innerHTML = incidents.map(construireCarteAlerte).join('');
 }
 
-// ---- Appelle l'API PHP avec les coordonnées de l'utilisateur ----
 
 async function recupererIncidentsProches(latitude, longitude, conteneur) {
   try {
@@ -71,15 +60,11 @@ async function recupererIncidentsProches(latitude, longitude, conteneur) {
   }
 }
 
-// ---- Fonction principale : géolocalise l'utilisateur puis lance la recherche ----
-
 async function fetchNearbyIncidents() {
   const conteneur = document.getElementById(ID_CONTENEUR_ALERTES);
 
-  // Si la page ne contient pas le conteneur d'alertes, on ne fait rien
   if (!conteneur) return;
 
-  // Le navigateur ne supporte pas du tout la géolocalisation
   if (!('geolocation' in navigator)) {
     afficherMessage(conteneur, "Votre navigateur ne permet pas la géolocalisation. Activez-la ou utilisez un navigateur récent.");
     return;
@@ -88,13 +73,11 @@ async function fetchNearbyIncidents() {
   afficherChargement(conteneur);
 
   navigator.geolocation.getCurrentPosition(
-    // ---- Succès : l'utilisateur a accepté le partage de sa position ----
     (position) => {
       const { latitude, longitude } = position.coords;
       recupererIncidentsProches(latitude, longitude, conteneur);
     },
 
-    // ---- Échec : refus, timeout, ou position indisponible ----
     (erreur) => {
       let message;
       switch (erreur.code) {
@@ -114,14 +97,12 @@ async function fetchNearbyIncidents() {
       afficherMessage(conteneur, message);
     },
 
-    // ---- Options de la géolocalisation ----
     {
-      enableHighAccuracy: true, // Priorité à la précision (GPS plutôt que triangulation réseau)
-      timeout: 10000,           // 10 secondes avant d'abandonner
-      maximumAge: 60000,        // Une position vieille de moins d'1 min peut être réutilisée
+      enableHighAccuracy: true, 
+      timeout: 10000,   
+      maximumAge: 60000,  
     }
   );
 }
 
-// Lance automatiquement la recherche dès que la page (et son conteneur) est prête
 document.addEventListener('DOMContentLoaded', fetchNearbyIncidents);

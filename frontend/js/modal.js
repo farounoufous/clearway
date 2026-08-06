@@ -19,12 +19,12 @@ function afficherModal({ titre, message, texteConfirmer = 'Confirmer', texteAnnu
     `;
 
     document.body.appendChild(overlay);
-    document.body.style.overflow = 'hidden'; // empêche le scroll de la page derrière la modale
+    document.body.style.overflow = 'hidden'; 
 
     function fermer(resultat) {
       overlay.classList.add('fermeture');
       document.body.style.overflow = '';
-      setTimeout(() => overlay.remove(), 150); // laisse l'animation de sortie se jouer
+      setTimeout(() => overlay.remove(), 150);
       resolve(resultat);
     }
 
@@ -33,19 +33,16 @@ function afficherModal({ titre, message, texteConfirmer = 'Confirmer', texteAnnu
     overlay.querySelector('[data-action="annuler"]')
       ?.addEventListener('click', () => fermer(false));
 
-    // Clic sur le fond flouté (en dehors de la carte) = équivalent à "Annuler"
     overlay.addEventListener('click', (evenement) => {
       if (evenement.target === overlay) fermer(false);
     });
   });
 }
 
-// ---- Remplace confirm() : renvoie true/false selon le bouton cliqué ----
 function afficherConfirmationModale(message, options = {}) {
   return afficherModal({ message, ...options });
 }
 
-// ---- Remplace alert() : un seul bouton "OK", se résout quand il est cliqué ----
 function afficherAlerteModale(message, titre = null) {
   return afficherModal({ titre, message, alerteSeule: true });
 }

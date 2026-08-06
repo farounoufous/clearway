@@ -3,7 +3,6 @@ window.API_BASE = window.API_BASE || 'https://clearway-production-6e27.up.railwa
 const CENTRE_COTONOU = [6.3654, 2.4183];
 const ZOOM_DEFAUT = 13;
 
-// ---- État du formulaire : les deux points choisis par l'utilisateur ----
 let pointDepart = null;   // { lat, lng }
 let pointArrivee = null;  // { lat, lng }
 let marqueurDepart = null;
@@ -11,7 +10,6 @@ let marqueurArrivee = null;
 let ligneTrajet = null;
 let marqueursResultats = [];
 
-// ---- Initialisation de la carte ----
 const carte = L.map('carte-itineraire', {
   zoomControl: true,
   attributionControl: true,
@@ -40,7 +38,6 @@ function creerIconePoint(couleur) {
 const ICONE_DEPART = creerIconePoint('bleu');
 const ICONE_ARRIVEE = creerIconePoint('rouge');
 
-// ---- Éléments du formulaire ----
 const texteDepart = document.getElementById('texte-depart');
 const texteArrivee = document.getElementById('texte-arrivee');
 const aideEl = document.getElementById('itineraire-aide');
@@ -82,7 +79,6 @@ function mettreAJourAffichageChamps() {
   }
 }
 
-// ---- Place ou déplace le marqueur de départ ----
 function definirDepart(latlng) {
   pointDepart = { lat: latlng.lat, lng: latlng.lng };
   if (marqueurDepart) {
@@ -98,8 +94,6 @@ function definirDepart(latlng) {
   mettreAJourAffichageChamps();
   mettreAJourLigne();
 }
-
-// ---- Place ou déplace le marqueur d'arrivée ----
 function definirArrivee(latlng) {
   pointArrivee = { lat: latlng.lat, lng: latlng.lng };
   if (marqueurArrivee) {
@@ -129,7 +123,6 @@ function mettreAJourLigne() {
   }
 }
 
-// ---- Clic sur la carte : 1er clic = départ, 2e clic = arrivée, 3e clic = on recommence ----
 carte.on('click', (evenement) => {
   if (!pointDepart) {
     definirDepart(evenement.latlng);
@@ -141,7 +134,6 @@ carte.on('click', (evenement) => {
   }
 });
 
-// ---- Bouton "Ma position" : place automatiquement le départ ----
 btnMaPosition.addEventListener('click', () => {
   if (!('geolocation' in navigator)) {
     afficherAlerteModale("Votre navigateur ne permet pas la géolocalisation.");
@@ -163,7 +155,6 @@ btnMaPosition.addEventListener('click', () => {
   );
 });
 
-// ---- Bouton "Recommencer" ----
 btnEffacer.addEventListener('click', reinitialiserFormulaire);
 
 function reinitialiserFormulaire() {
@@ -182,7 +173,6 @@ function effacerMarqueursResultats() {
   marqueursResultats = [];
 }
 
-// ---- Description de la position le long du trajet, pour l'affichage ----
 function positionSurTrajetTexte(pourcentage) {
   if (pourcentage <= 15) return 'proche du départ';
   if (pourcentage >= 85) return "proche de l'arrivée";
@@ -206,8 +196,6 @@ function construireCarteResultat(s) {
     </a>
   `;
 }
-
-// ---- Appel du backend et affichage des résultats ----
 async function verifierTrajet() {
   if (!pointDepart || !pointArrivee) return;
 
@@ -248,7 +236,6 @@ async function verifierTrajet() {
       ${donnees.signalements.map(construireCarteResultat).join('')}
     `;
 
-    // Place un petit marqueur pour chaque signalement trouvé, le long de la ligne
     donnees.signalements.forEach((s) => {
       const icone = creerIconePoint(s.gravite_classe === 'severe' ? 'rouge' : 'orange');
       const marqueur = L.marker([s.latitude, s.longitude], { icon: icone }).addTo(carte);
@@ -269,7 +256,6 @@ btnVerifier.addEventListener('click', verifierTrajet);
 
 mettreAJourAffichageChamps();
 
-// ---- Recalcule la taille de la carte si le conteneur change de dimensions ----
 let delaiRedimensionnement;
 function planifierInvalidateSize() {
   clearTimeout(delaiRedimensionnement);

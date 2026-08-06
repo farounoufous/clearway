@@ -1,5 +1,5 @@
 <?php
-header("Access-Control-Allow-Origin: https://clearway-phi.vercel.app"); // ⚠️ REMPLACEZ par votre vraie URL Vercel
+header("Access-Control-Allow-Origin: https://clearway-phi.vercel.app");
 header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
 header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE");
 header("Access-Control-Allow-Credentials: true");
@@ -9,7 +9,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     exit(0);
 }
 
-// URL absolue du backend (basée sur la requête réelle) : cf. voies.php pour le détail
 $origineBackend = (($_SERVER['HTTPS'] ?? 'off') !== 'off' ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'];
 
 header('Content-Type: application/json; charset=utf-8');
@@ -17,9 +16,6 @@ require_once dirname(__DIR__) . '/config/db.php';
 
 const SEUIL_CONFIRMATIONS_DEGAGEE = 3;
 const SEUIL_CONFIRMATIONS_VALIDATION = 3;
-// Seuil volontairement bas : signaler un contenu faux/suspect doit pouvoir
-// le faire disparaître vite, contrairement à la validation "toujours bloquée"
-// qui demande un vrai consensus (3). Ici, 2 avis suffisent à retirer la voie.
 const SEUIL_SIGNALEMENT_ERRONE = 2;
 
 function graviteClasse($gravite) {
@@ -38,12 +34,6 @@ function graviteLabel($gravite) {
         default => 'léger',
     };
 }
-
-// Niveau de confiance affiché à l'utilisateur (même règle que voies.php) :
-//  - 'validee'                : seuil de 3 confirmations atteint, ne s'archive plus jamais
-//  - 'confirmee_partiellement': au moins 1 confirmation, en cours de consolidation
-//  - 'incertain'               : aucune confirmation depuis 90 min, fiabilité à prendre avec réserve
-//  - 'recente'                 : signalement frais, pas encore eu le temps d'être confirmé
 function confiance($statut, $valide, $nbConfirmations) {
     if ($valide) return 'validee';
     if ($nbConfirmations > 0) return 'confirmee_partiellement';
@@ -51,7 +41,6 @@ function confiance($statut, $valide, $nbConfirmations) {
     return 'recente';
 }
 
-// Libellé de secours : quartier > ville > pays > coordonnées brutes
 function libelleZone($s) {
     if (!empty($s['quartier'])) return $s['quartier'];
     if (!empty($s['ville'])) return $s['ville'];
@@ -62,7 +51,6 @@ function libelleZone($s) {
     return 'Localisation inconnue';
 }
 
-// Calcule le temps restant avant archivage auto (format "1h48")
 function tempsRestant($base) {
     $deadline = strtotime($base) + 3 * 3600;
     $secondesRestantes = $deadline - time();
@@ -72,8 +60,6 @@ function tempsRestant($base) {
     return $h . 'h' . str_pad($m, 2, '0', STR_PAD_LEFT);
 }
 
-// Compte les confirmations "voie dégagée" par VISITEUR distinct
-// (repli sur l'IP pour la compatibilité avec d'anciennes lignes créées avant cette migration)
 function compterConfirmationsDegageeDistinctes(PDO $pdo, int $signalementId): int {
     $stmt = $pdo->prepare("
         SELECT COUNT(DISTINCT COALESCE(visiteur_id, ip_utilisateur)) AS total
@@ -84,9 +70,6 @@ function compterConfirmationsDegageeDistinctes(PDO $pdo, int $signalementId): in
     return (int) $stmt->fetch()['total'];
 }
 
-// Compte les confirmations "toujours bloquée" par VISITEUR distinct
-// (même logique que ci-dessus : un même visiteur ne doit compter qu'une fois,
-// même s'il existe d'anciennes lignes sans visiteur_id créées avant migration)
 function compterConfirmationsBloqueesDistinctes(PDO $pdo, int $signalementId): int {
     $stmt = $pdo->prepare("
         SELECT COUNT(DISTINCT COALESCE(visiteur_id, ip_utilisateur)) AS total
@@ -97,7 +80,6 @@ function compterConfirmationsBloqueesDistinctes(PDO $pdo, int $signalementId): i
     return (int) $stmt->fetch()['total'];
 }
 
-// Compte les signalements "erroné/suspect" par VISITEUR distinct
 function compterConfirmationsErroneesDistinctes(PDO $pdo, int $signalementId): int {
     $stmt = $pdo->prepare("
         SELECT COUNT(DISTINCT COALESCE(visiteur_id, ip_utilisateur)) AS total
@@ -107,11 +89,6 @@ function compterConfirmationsErroneesDistinctes(PDO $pdo, int $signalementId): i
     $stmt->execute([$signalementId]);
     return (int) $stmt->fetch()['total'];
 }
-
-// Marque le signalement comme "validé" par la communauté dès que le seuil de
-// confirmations "toujours bloquée" distinctes est atteint. Un signalement
-// validé n'est plus jamais archivé automatiquement après 3h (voir voies.php) :
-// il ne disparaîtra que via le circuit "voie dégagée" + confirmer_degagement.
 function marquerValideSiSeuilAtteint(PDO $pdo, int $signalementId): bool {
     $nbBloquees = compterConfirmationsBloqueesDistinctes($pdo, $signalementId);
     if ($nbBloquees >= SEUIL_CONFIRMATIONS_VALIDATION) {
@@ -123,10 +100,6 @@ function marquerValideSiSeuilAtteint(PDO $pdo, int $signalementId): bool {
 }
 
 $methode = $_SERVER['REQUEST_METHOD'];
-
-// ================================================
-// GET : détails d'un signalement
-// ================================================
 if ($methode === 'GET') {
     $id = $_GET['id'] ?? null;
 
@@ -176,7 +149,6 @@ if ($methode === 'GET') {
         'seuil_errone' => SEUIL_SIGNALEMENT_ERRONE,
         'progression_degagee' => $progression,
         // Une fois validé, le signalement ne s'archive plus jamais tout seul :
-        // il n'y a donc plus de compte à rebours à afficher.
         'temps_restant' => $estValide ? null : tempsRestant($base),
         'photo' => $s['photo'] ? $origineBackend . '/uploads/' . $s['photo'] : null,
         'lien_maps' => ($s['latitude'] !== null && $s['longitude'] !== null)
@@ -185,10 +157,6 @@ if ($methode === 'GET') {
     ]);
     exit;
 }
-
-// ================================================
-// POST : confirmer ou infirmer
-// ================================================
 if ($methode === 'POST') {
     $donnees = json_decode(file_get_contents('php://input'), true);
 
@@ -227,13 +195,6 @@ if ($methode === 'POST') {
         echo json_encode(['erreur' => 'Ce signalement a déjà été archivé.']);
         exit;
     }
-
-    // ================================================
-    // Action "confirmer_degagement" : archivage DÉFINITIF, déclenché par un clic
-    // explicite une fois que le seuil de 3 confirmations est déjà atteint.
-    // Ne passe PAS par la table confirmations (ce n'est pas un vote, juste le
-    // geste final qui retire la voie de la liste).
-    // ================================================
     if ($action === 'confirmer_degagement') {
         $nbDegagees = compterConfirmationsDegageeDistinctes($pdo, (int) $signalementId);
 
@@ -248,7 +209,6 @@ if ($methode === 'POST') {
 
         $reponseJson = json_encode(['succes' => true, 'action' => $action, 'archive' => true]);
 
-        // Répond tout de suite, puis notifie les abonnés en arrière-plan
         ignore_user_abort(true);
         if (function_exists('fastcgi_finish_request')) {
             echo $reponseJson;
@@ -279,9 +239,7 @@ if ($methode === 'POST') {
 
             $webpush = new WebPush(VAPID_CLE_PUBLIQUE, VAPID_CLE_PRIVEE, VAPID_SUBJECT);
 
-            // ---- Alertes push UNIQUEMENT dans un rayon de 5 km ----
-            // Même règle que pour un nouveau signalement (voir signalement.php) :
-            // seuls les abonnés situés à moins de 5 km de CETTE voie sont notifiés.
+            // Alertes push UNIQUEMENT dans un rayon de 5 km
             $abonnements = [];
             $latitudeVoie = $ligneZone['latitude'] !== null ? (float) $ligneZone['latitude'] : null;
             $longitudeVoie = $ligneZone['longitude'] !== null ? (float) $ligneZone['longitude'] : null;
@@ -330,9 +288,6 @@ if ($methode === 'POST') {
 
     $ip = $_SERVER['REMOTE_ADDR'] ?? 'inconnu';
 
-    // Garde-fou serveur : un même visiteur ne peut confirmer qu'une seule fois
-    // par signalement et par type d'action (en plus du verrou côté navigateur,
-    // pour éviter le contournement en vidant le localStorage)
     $stmtDejaVote = $pdo->prepare("
         SELECT id FROM confirmations WHERE signalement_id = ? AND visiteur_id = ? AND type_confirmation = ?
     ");
@@ -348,9 +303,6 @@ if ($methode === 'POST') {
     }
 
     if ($action === 'toujours_bloquee') {
-        // Réinitialise le compte à rebours (utile tant que le signalement
-        // n'est pas encore validé par la communauté), et fait sortir le
-        // signalement de l'état 'incertain' puisqu'il vient d'être reconfirmé
         $pdo->prepare("
             UPDATE signalements
             SET derniere_confirmation = NOW(), statut = 'actif'
@@ -369,12 +321,6 @@ if ($methode === 'POST') {
         ]);
         exit;
     }
-
-    // ---- action === 'signalement_errone' : n'importe qui (y compris l'auteur,
-    // s'il veut retirer son propre signalement erroné) peut signaler que ce
-    // signalement semble faux, spam, ou mal placé. Seuil bas et volontaire :
-    // 2 avis distincts suffisent pour un archivage immédiat, sans attendre le
-    // consensus plus lourd requis pour "toujours bloquée" (3).
     if ($action === 'signalement_errone') {
         $nbErrones = compterConfirmationsErroneesDistinctes($pdo, (int) $signalementId);
         $archive = $nbErrones >= SEUIL_SIGNALEMENT_ERRONE;
@@ -393,10 +339,6 @@ if ($methode === 'POST') {
         ]);
         exit;
     }
-
-    // ---- action === 'voie_degagee' : compte les visiteurs distincts, mais n'archive plus
-    // jamais automatiquement — une fois le seuil atteint, la carte affiche un badge
-    // "Récemment dégagée" et attend un clic explicite (action confirmer_degagement) ----
     $nbDegagees = compterConfirmationsDegageeDistinctes($pdo, (int) $signalementId);
     $progression = min(100, (int) round($nbDegagees / SEUIL_CONFIRMATIONS_DEGAGEE * 100));
 

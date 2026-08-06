@@ -1,21 +1,5 @@
 <?php
-// ============================================
-// ClearWay Bénin - API "Vérifier les doublons"
-//
-// Appelée par le frontend juste AVANT l'envoi définitif d'un nouveau
-// signalement (cf. signalement.js). Objectif : éviter que plusieurs
-// utilisateurs signalant la même voie bloquée créent chacun un
-// signalement séparé - ce qui fragmente le seuil des 3 confirmations
-// distinctes au lieu de le faire progresser sur un seul signalement.
-//
-// On ne fusionne JAMAIS automatiquement (trop risqué : deux obstacles
-// réellement différents peuvent être proches). On se contente de
-// renvoyer les signalements actifs/incertains à proximité ; c'est le
-// frontend qui propose ensuite à l'utilisateur de confirmer l'existant
-// ou de continuer son propre signalement.
-// ============================================
-
-header("Access-Control-Allow-Origin: https://clearway-phi.vercel.app"); // ⚠️ REMPLACEZ par votre vraie URL Vercel
+header("Access-Control-Allow-Origin: https://clearway-phi.vercel.app");
 header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
 header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE");
 header("Access-Control-Allow-Credentials: true");
@@ -25,10 +9,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 }
 
 header('Content-Type: application/json; charset=utf-8');
-
-// ---- Rayon de recherche des doublons potentiels, en mètres ----
-// Volontairement resserré (contrairement aux 5 km des alertes de proximité) :
-// ici on cherche vraiment "le même endroit", pas juste "dans le quartier".
 const RAYON_METRES = 200;
 const LIMITE_RESULTATS = 5;
 
@@ -97,7 +77,6 @@ function graviteLabel($gravite) {
     };
 }
 
-// Même règle de confiance que le reste de l'app (cf. voies.php)
 function confiance($s) {
     if ((bool) $s['valide']) return 'validee';
     if ((int) $s['nb_confirmations'] > 0) return 'confirmee_partiellement';
@@ -105,7 +84,6 @@ function confiance($s) {
     return 'recente';
 }
 
-// Temps écoulé depuis la création, format court ("20 min", "1h30")
 function dureeEcoulee($date) {
     $minutes = max(0, floor((time() - strtotime($date)) / 60));
     if ($minutes < 1) return "à l'instant";

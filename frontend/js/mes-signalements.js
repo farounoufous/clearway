@@ -53,7 +53,7 @@ async function chargerMesSignalements() {
     });
 
   } catch (erreur) {
-    listeEl.innerHTML = '<p class="etat-vide">Impossible de charger vos signalements. Vérifie votre connexion.</p>';
+    listeEl.innerHTML = '<p class="etat-vide">Impossible de charger vos signalements. Vérifiez votre connexion.</p>';
     console.error('Erreur chargement mes signalements :', erreur);
   }
 }

@@ -1,5 +1,5 @@
 const CLE_NOTIFICATIONS_LOCALES = 'clearway_notifications_locales';
-const CLE_DERNIER_ID_VU = 'clearway_dernier_id_vu'; // remplace l'ancien CLE_IDS_CONNUS (ensemble d'IDs, peu fiable)
+const CLE_DERNIER_ID_VU = 'clearway_dernier_id_vu';
 const MAX_NOTIFICATIONS = 30;
 
 function listerNotificationsLocales() {
@@ -39,7 +39,6 @@ function marquerNotificationsCommeLues() {
   }
 }
 
-// ---- Détecte les nouveaux signalements en comparant à l'ID le plus élevé déjà vu ----
 function detecterNouveauxSignalements(signalements) {
   if (!signalements || signalements.length === 0) return;
 
@@ -48,7 +47,7 @@ function detecterNouveauxSignalements(signalements) {
 
   const idMaxActuel = Math.max(...signalements.map(s => s.id));
 
-  // Première visite jamais faite sur cet appareil : on mémorise juste la
+  // Première visite jamais faite sur cet appareil : on mémorise
   if (dernierIdVu === null || Number.isNaN(dernierIdVu)) {
     localStorage.setItem(CLE_DERNIER_ID_VU, String(idMaxActuel));
     return;
@@ -72,7 +71,6 @@ function detecterNouveauxSignalements(signalements) {
   }
 }
 
-// ---- Met à jour le badge numérique sur la cloche, si elle est présente sur cette page ----
 function mettreAJourBadgeCloche() {
   const badge = document.getElementById('badge-notifications-cloche');
   if (!badge) return;
@@ -87,7 +85,6 @@ function mettreAJourBadgeCloche() {
 
 document.addEventListener('DOMContentLoaded', mettreAJourBadgeCloche);
 
-// ---- Relais depuis le service worker : quand une notification push arrive
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.addEventListener('message', (evenement) => {
     if (!evenement.data || evenement.data.type !== 'clearway-notification-push') return;

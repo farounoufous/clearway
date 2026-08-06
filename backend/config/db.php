@@ -23,11 +23,9 @@ function ouvrirConnexion($host, $nom, $utilisateur, $motDePasse, $port = 3306) {
 
 $pdo = null;
 try {
-    // ---- Essai 1 : local XAMPP ----
     $pdo = ouvrirConnexion('localhost', 'clearway_benin', 'root', '');
 } catch (\Throwable $e) {
     try {
-        // ---- Essai 2 : Production Railway ----
         $host = getenv('MYSQLHOST');
 
         if (!$host) {
@@ -42,8 +40,6 @@ try {
             getenv('MYSQLPORT') ?: 3306
         );
     } catch (\Throwable $e_railway) {
-        // En cas d'échec total (local et production), on renvoie une erreur JSON propre
-        // avec un VRAI code d'erreur HTTP (500) : les en-têtes CORS sont déjà envoyés
         http_response_code(500);
         header('Content-Type: application/json; charset=utf-8');
         die(json_encode([
@@ -145,7 +141,6 @@ try {
     error_log('Auto-réparation schéma (géolocalisation push_subscriptions) impossible : ' . $e->getMessage());
 }
 
-// ---- Ajout de la colonne ip_createur (anti-spam signalements) ----
 try {
     $colonneIpCreateur = $pdo->query("SHOW COLUMNS FROM signalements LIKE 'ip_createur'")->fetch();
     if (!$colonneIpCreateur) {
@@ -154,12 +149,6 @@ try {
 } catch (\Throwable $e) {
     error_log("Auto-réparation schéma (ip_createur) impossible : " . $e->getMessage());
 }
-
-// ---- Ajout de la valeur 'signalement_errone' à l'ENUM type_confirmation ----
-// Nouveau type de vote (cf. confirmation.php) : permet à la communauté de
-// signaler un signalement comme faux/suspect/mal placé. Seuil bas (2
-// confirmations distinctes) pour un archivage rapide, distinct du seuil de
-// validation "toujours bloquée" (3).
 try {
     $colonneTypeConfirmation = $pdo->query("SHOW COLUMNS FROM confirmations LIKE 'type_confirmation'")->fetch();
     if ($colonneTypeConfirmation && stripos($colonneTypeConfirmation['Type'], "'signalement_errone'") === false) {
@@ -168,11 +157,7 @@ try {
 } catch (\Throwable $e) {
     error_log("Auto-réparation schéma (type_confirmation 'signalement_errone') impossible : " . $e->getMessage());
 }
-// Nouvelle règle de fiabilité graduée (cf. voies.php) : un signalement sans
-// aucune confirmation bascule d'abord en 'incertain' (toujours visible, mais
-// affiché comme non confirmé) avant d'être archivé, au lieu de disparaître
-// directement. Vérifie le type de la colonne pour ne lancer l'ALTER qu'une
-// seule fois (les appels suivants voient déjà 'incertain' dans le Type).
+
 try {
     $colonneStatut = $pdo->query("SHOW COLUMNS FROM signalements LIKE 'statut'")->fetch();
     if ($colonneStatut && stripos($colonneStatut['Type'], "'incertain'") === false) {

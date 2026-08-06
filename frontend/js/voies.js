@@ -20,8 +20,6 @@ function marquerSignalementCommeVu(id) {
   }
 }
 
-// ---- Normalise un texte pour une recherche insensible aux accents/majuscules ----
-// (utile pour des noms comme "Fidjrossè")
 function normaliser(texte) {
   return texte
     .normalize('NFD')
@@ -67,8 +65,6 @@ function afficherVoies(voies) {
     });
   });
 
-  // Le bouton Maps ne doit pas déclencher la navigation vers confirmation.html
-  // (il est à l'intérieur de la carte, qui est elle-même un lien)
   listeEl.querySelectorAll('.btn-voir-maps').forEach(bouton => {
     bouton.addEventListener('click', (evenement) => {
       evenement.preventDefault();
@@ -98,8 +94,6 @@ async function chargerVoies() {
     console.error('Erreur chargement voies :', erreur);
   }
 }
-
-// ---- Recherche par zone (filtre la liste déjà chargée, aucun appel serveur) ----
 const champRecherche = document.getElementById('recherche-zone');
 
 champRecherche.addEventListener('input', () => {

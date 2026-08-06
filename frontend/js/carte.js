@@ -1,7 +1,5 @@
 window.API_BASE = window.API_BASE || 'https://clearway-production-6e27.up.railway.app/api';
 
-// Même clé que confirmation.js : un même visiteur garde le même identifiant
-// anonyme partout dans l'app, ce qui évite de fausser les comptes de votes
 const CLE_VISITEUR_ID = 'clearway_visiteur_id';
 
 function obtenirVisiteurId() {
@@ -16,7 +14,6 @@ function obtenirVisiteurId() {
 const CENTRE_COTONOU = [6.3654, 2.4183];
 const ZOOM_DEFAUT = 13;
 
-// ---- Initialisation de la carte ----
 const carte = L.map('carte-zones', {
   zoomControl: true,
   attributionControl: true,
@@ -29,7 +26,6 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>',
 }).addTo(carte);
 
-// ---- Icônes personnalisées (pin SVG coloré via CSS, léger et net sur mobile) ----
 function creerIconePin(couleur) {
   return L.divIcon({
     className: `marqueur-pin marqueur-pin-${couleur}`,
@@ -50,7 +46,6 @@ const ICONES = {
   vert: creerIconePin('vert'),
 };
 
-// ---- Groupe de clustering : regroupe les marqueurs proches au dézoom ----
 const groupeMarqueurs = L.markerClusterGroup({
   maxClusterRadius: 55,
   spiderfyOnMaxZoom: true,
@@ -58,7 +53,6 @@ const groupeMarqueurs = L.markerClusterGroup({
 });
 carte.addLayer(groupeMarqueurs);
 
-// ---- Construction du contenu du pop-up d'un marqueur ----
 function construirePopup(item, couleur) {
   const libellesStatut = {
     rouge: 'Bloquée',
@@ -71,8 +65,6 @@ function construirePopup(item, couleur) {
     ? `<button type="button" class="btn-popup-secondaire" data-action="degage" data-id="${item.id}">Ce n'est plus bloqué</button>`
     : '';
 
-  // "depuis" (voies.php) est une durée brute ("20 min") à préfixer, alors que
-  // "il_y_a" (recemment-degage.php) contient déjà le préfixe ("il y a 20 min")
   const texteTemps = item.depuis
     ? `depuis ${item.depuis}`
     : (item.il_y_a || '');
@@ -93,7 +85,6 @@ function construirePopup(item, couleur) {
     </div>`;
 }
 
-// ---- Envoi du retour "Ce n'est plus bloqué" (même circuit que confirmation.php) ----
 async function envoyerVoieDegagee(id, bouton) {
   bouton.disabled = true;
   const texteOriginal = bouton.textContent;
@@ -127,9 +118,6 @@ async function envoyerVoieDegagee(id, bouton) {
     bouton.textContent = texteOriginal;
   }
 }
-
-// Délégation : le contenu du pop-up est recréé à chaque ouverture, on
-// rattache donc l'écouteur du bouton "Ce n'est plus bloqué" à ce moment-là
 carte.on('popupopen', (evenement) => {
   const noeud = evenement.popup.getElement();
   const bouton = noeud ? noeud.querySelector('[data-action="degage"]') : null;
@@ -138,7 +126,6 @@ carte.on('popupopen', (evenement) => {
   }
 });
 
-// ---- Chargement des marqueurs depuis l'API ----
 async function chargerMarqueurs() {
   try {
     const [reponseVoies, reponseDegagees] = await Promise.all([
@@ -154,8 +141,7 @@ async function chargerMarqueurs() {
     voies.forEach((voie) => {
       if (voie.latitude == null || voie.longitude == null) return; // pas de position exploitable
 
-      // Sévère = bloquée (rouge). Modéré/léger/praticable = trafic ralenti mais
-      // encore actif (orange). Le vert est réservé aux voies déjà confirmées dégagées.
+      // Sévère = bloquée (rouge). Modéré/léger/praticable = trafic ralenti 
       const couleur = voie.gravite_classe === 'severe' ? 'rouge' : 'orange';
 
       const marqueur = L.marker([voie.latitude, voie.longitude], { icon: ICONES[couleur] });
@@ -176,7 +162,6 @@ async function chargerMarqueurs() {
   }
 }
 
-// ---- Géolocalisation de l'utilisateur ----
 let marqueurPosition = null;
 let cercleImprecision = null;
 
@@ -193,7 +178,6 @@ carte.on('locationfound', (evenement) => {
   if (marqueurPosition) carte.removeLayer(marqueurPosition);
   if (cercleImprecision) carte.removeLayer(cercleImprecision);
 
-  // Marqueur bleu pulsant (icône CSS, pas de tuile externe nécessaire)
   marqueurPosition = L.marker(evenement.latlng, {
     icon: L.divIcon({
       className: 'marqueur-position',
@@ -220,16 +204,10 @@ carte.on('locationerror', () => {
   afficherAlerteModale('Impossible de vous localiser. Vérifiez que la géolocalisation est autorisée pour ce site, puis réessayez.');
 });
 
-// ---- Chargement initial + rafraîchissement périodique (même logique que l'accueil) ----
 document.addEventListener('DOMContentLoaded', () => {
   chargerMarqueurs();
   setInterval(chargerMarqueurs, 30000);
 });
-
-// ---- Recalcule la taille de la carte quand le conteneur change réellement
-// de dimensions (rotation d'écran, redimensionnement de fenêtre, barre
-// d'adresse mobile qui apparaît/disparaît). Nécessaire car Leaflet calcule
-// la taille de ses tuiles une seule fois à l'initialisation. ----
 let delaiRedimensionnement;
 function planifierInvalidateSize() {
   clearTimeout(delaiRedimensionnement);
@@ -239,6 +217,4 @@ function planifierInvalidateSize() {
 window.addEventListener('resize', planifierInvalidateSize);
 window.addEventListener('orientationchange', planifierInvalidateSize);
 
-// Sécurité supplémentaire : certains navigateurs mobiles ajustent la barre
-// d'adresse juste après le chargement, une fois la carte déjà initialisée
 window.addEventListener('load', planifierInvalidateSize);

@@ -32,7 +32,6 @@ async function chargerAccueil(rafraichissementSilencieux = false) {
     document.getElementById('nb-bloquees').textContent = donnees.nb_bloquees;
     document.getElementById('nb-actifs').textContent = donnees.nb_actifs;
 
-    // Alimente la cloche de notifications avec les signalements réellement nouveaux
     if (typeof detecterNouveauxSignalements === 'function') {
       detecterNouveauxSignalements(donnees.derniers_signalements || []);
     }
@@ -72,7 +71,6 @@ async function chargerAccueil(rafraichissementSilencieux = false) {
     });
 
   } catch (erreur) {
-    // Un rafraîchissement silencieux qui échoue ne doit pas effacer la liste déjà affichée
     if (!rafraichissementSilencieux) {
       listeEl.innerHTML = '<p class="etat-vide">Impossible de charger les signalements. Vérifiez votre connexion!</p>';
     }
@@ -80,7 +78,6 @@ async function chargerAccueil(rafraichissementSilencieux = false) {
   }
 }
 
-// ---- Rafraîchissement automatique toutes les 10 secondes ----
 // Permet de voir arriver les nouveaux signalements sans recharger la page
 setInterval(() => chargerAccueil(true), 10000);
 

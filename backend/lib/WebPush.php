@@ -95,7 +95,6 @@ class WebPush
         return $signingInput . '.' . self::b64urlEncode($signatureRaw);
     }
 
-    // ---------- Reconstruit une ressource clé privée EC depuis les octets bruts stockés (d, x, y) ----------
     private function clePriveeDepuisB64(string $privB64, string $pubB64)
     {
         $d = self::b64urlDecode($privB64);
@@ -115,13 +114,6 @@ class WebPush
         return openssl_pkey_get_private($pem);
     }
 
-    /**
-     * Envoie une notification push chiffrée à un abonné.
-     *
-     * @param array $subscription ['endpoint' => ..., 'p256dh' => ..., 'auth' => ...] (base64url, tel que fourni par le navigateur)
-     * @param string $payloadJson Le contenu JSON à afficher (titre, message, etc.)
-     * @return array ['succes' => bool, 'code_http' => int, 'expire' => bool]
-     */
     public function envoyerNotification(array $subscription, string $payloadJson): array
     {
         $uaPubRaw = self::b64urlDecode($subscription['p256dh']);
@@ -169,14 +161,10 @@ class WebPush
         return [
             'succes' => $codeHttp >= 200 && $codeHttp < 300,
             'code_http' => $codeHttp,
-            // 404/410 = l'abonnement n'existe plus côté navigateur -> à supprimer de la base
             'expire' => in_array($codeHttp, [404, 410], true),
         ];
     }
 
-    /**
-     * Génère une nouvelle paire de clés VAPID (à exécuter UNE SEULE FOIS, via generer-cles-vapid.php)
-     */
     public static function genererClesVapid(): array
     {
         $paire = self::genererPaireCles();

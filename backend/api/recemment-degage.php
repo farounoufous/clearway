@@ -1,10 +1,9 @@
 <?php
-header("Access-Control-Allow-Origin: https://clearway-phi.vercel.app"); // ⚠️ REMPLACEZ par votre vraie URL Vercel
+header("Access-Control-Allow-Origin: https://clearway-phi.vercel.app"); 
 header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
 header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE");
 header("Access-Control-Allow-Credentials: true");
 
-// Si c'est une requête de pré-vérification (OPTIONS), on arrête le script immédiatement
 if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     exit(0);
 }
@@ -28,7 +27,6 @@ $sql = "
 ";
 $rows = $pdo->query($sql)->fetchAll();
 
-// Libellé de secours : quartier > ville > pays > coordonnées brutes
 function libelleZone($s) {
     if (!empty($s['quartier'])) return $s['quartier'];
     if (!empty($s['ville'])) return $s['ville'];

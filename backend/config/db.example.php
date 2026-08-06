@@ -13,11 +13,9 @@ function ouvrirConnexion($host, $nom, $utilisateur, $motDePasse) {
 }
 
 try {
-    // ---- Essai 1 : config locale (XAMPP) ----
     $pdo = ouvrirConnexion('localhost', 'clearway_benin', 'root', '');
 } catch (\Throwable $e) {
     try {
-        // ---- Essai 2 : config en ligne (à compléter avec tes identifiants d'hébergement) ----
         $pdo = ouvrirConnexion('TON_HOTE_MYSQL', 'TON_NOM_DE_BASE', 'TON_UTILISATEUR', 'TON_MOT_DE_PASSE');
     } catch (\Throwable $e2) {
         http_response_code(500);
@@ -52,8 +50,6 @@ try {
     error_log('Auto-réparation schéma (push_subscriptions) impossible : ' . $e->getMessage());
 }
 
-// ---- Migration : suppression de l'ancien système de zones ----
-// (le formulaire n'utilise plus qu'un point GPS/carte comme localisation)
 try {
     $colonneExiste = $pdo->query("SHOW COLUMNS FROM signalements LIKE 'zone_id'")->fetch();
     if ($colonneExiste) {
@@ -78,7 +74,6 @@ try {
     error_log('Auto-réparation schéma (suppression table zones) impossible : ' . $e->getMessage());
 }
 
-// ---- Nouvelles colonnes de localisation détaillée (géocodage inversé) ----
 try {
     $colonnesLocalisation = [
         'accuracy'         => "DECIMAL(8,2) NULL",

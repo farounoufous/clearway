@@ -1,5 +1,4 @@
 <?php
-// Préchargé automatiquement sur CHAQUE requête par le serveur intégré PHP
 header("Access-Control-Allow-Origin: https://clearway-phi.vercel.app");
 header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
 header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE");

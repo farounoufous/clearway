@@ -1,16 +1,13 @@
 <?php
-
-header("Access-Control-Allow-Origin: https://clearway-phi.vercel.app"); // ⚠️ REMPLACEZ par votre vraie URL Vercel
+header("Access-Control-Allow-Origin: https://clearway-phi.vercel.app");
 header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
 header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE");
 header("Access-Control-Allow-Credentials: true");
 
-// Si c'est une requête de pré-vérification (OPTIONS), on arrête le script immédiatement
 if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     exit(0);
 }
 
-// URL absolue du backend (basée sur la requête réelle) : cf. voies.php pour le détail
 $origineBackend = (($_SERVER['HTTPS'] ?? 'off') !== 'off' ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'];
 
 header('Content-Type: application/json; charset=utf-8');
@@ -24,7 +21,6 @@ if (empty($ids)) {
     exit;
 }
 
-// Limite raisonnable pour éviter un appel excessif si le stockage local a grossi
 $ids = array_slice($ids, 0, 100);
 
 $placeholders = implode(',', array_fill(0, count($ids), '?'));
@@ -62,7 +58,6 @@ function dateLisible($date) {
     return date('d/m/Y à H\hi', strtotime($date));
 }
 
-// Même règle de confiance que voies.php / confirmation.php
 function confiance($s) {
     if ((bool) $s['valide']) return 'validee';
     if ((int) $s['nb_confirmations'] > 0) return 'confirmee_partiellement';
@@ -70,7 +65,6 @@ function confiance($s) {
     return 'recente';
 }
 
-// Libellé de secours : quartier > ville > pays > coordonnées brutes
 function libelleZone($s) {
     if (!empty($s['quartier'])) return $s['quartier'];
     if (!empty($s['ville'])) return $s['ville'];

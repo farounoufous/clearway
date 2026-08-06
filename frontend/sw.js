@@ -2,8 +2,6 @@ const VERSION_CACHE = 'clearway-v4';
 const CACHE_SHELL = `${VERSION_CACHE}-shell`;
 const CACHE_DONNEES = `${VERSION_CACHE}-donnees`;
 
-// Chemins relatifs à ce fichier (frontend/sw.js) -> s'adaptent automatiquement
-// au dossier réel de déploiement (InfinityFree, localhost, sous-dossier, etc.)
 const FICHIERS_SHELL = [
   'index.html',
   'voies.html',
@@ -37,7 +35,6 @@ const FICHIERS_SHELL = [
   'icone-512.png',
 ];
 
-// ---- Installation : met en cache le "squelette" de l'app ----
 self.addEventListener('install', (evenement) => {
   evenement.waitUntil(
     caches.open(CACHE_SHELL)
@@ -47,7 +44,6 @@ self.addEventListener('install', (evenement) => {
   self.skipWaiting();
 });
 
-// ---- Activation : nettoie les anciennes versions de cache ----
 self.addEventListener('activate', (evenement) => {
   evenement.waitUntil(
     caches.keys().then((noms) =>
@@ -60,30 +56,23 @@ self.addEventListener('activate', (evenement) => {
   );
   self.clients.claim();
 });
-// ---- Interception des requêtes ----
 self.addEventListener('fetch', (evenement) => {
   const requete = evenement.request;
 
-  // SÉCURITÉ : On ignore complètement les requêtes générées par les extensions Chrome
   if (requete.url.startsWith('chrome-extension://')) return;
-
-  // On ne touche jamais aux requêtes d'écriture (POST/DELETE)
   if (requete.method !== 'GET') return;
 
   const url = new URL(requete.url);
 
-  // Correction de la détection : on vérifie si l'URL contient '/api/' (valable pour Railway ET l'ancien système)
   if (url.pathname.includes('/api/') || url.hostname.includes('railway.app')) {
     evenement.respondWith(
       fetch(requete)
         .then((reponse) => {
-          // Si la réponse réseau échoue (ex: erreur CORS ou 500), on ne la met pas en cache
           if (!reponse || reponse.status !== 200 || reponse.type === 'opaque') {
             return reponse;
           }
           const copie = reponse.clone();
           caches.open(CACHE_DONNEES).then((cache) => {
-            // Sécurité pour éviter de planter si l'URL n'est pas http/https
             if (requete.url.startsWith('http')) {
               cache.put(requete, copie);
             }
@@ -103,12 +92,6 @@ self.addEventListener('fetch', (evenement) => {
     return;
   }
 
-
-  // Pages HTML (navigation) : réseau en priorité, pour toujours servir la
-  // dernière version déployée quand la connexion est disponible. Le cache
-  // ne sert qu'en dernier recours (hors ligne, ou requête réseau échouée) -
-  // évite qu'une mise à jour de l'app reste invisible tant que le cache
-  // n'a pas explicitement été invalidé.
   if (requete.mode === 'navigate' || requete.destination === 'document') {
     evenement.respondWith(
       fetch(requete)
@@ -123,9 +106,6 @@ self.addEventListener('fetch', (evenement) => {
     );
     return;
   }
-
-  // Fichiers statiques (CSS/JS/images) : cache en priorité (rapide),
-  // avec mise à jour silencieuse en arrière-plan pour la prochaine visite
   evenement.respondWith(
     caches.match(requete).then((reponseCache) => {
       const miseAJour = fetch(requete)
@@ -138,14 +118,11 @@ self.addEventListener('fetch', (evenement) => {
         })
         .catch(() => null);
 
-      // Sert le cache immédiatement s'il existe, sinon attend le réseau,
-      // et en dernier recours retombe sur la page d'accueil déjà en cache
       return reponseCache || miseAJour || caches.match('index.html');
     })
   );
 });
 
-// ---- Notifications push ----
 self.addEventListener('push', (evenement) => {
   let donnees = { titre: 'ClearWay Bénin', message: 'Nouvelle alerte sur une voie.' };
 
@@ -162,19 +139,13 @@ self.addEventListener('push', (evenement) => {
     icon: 'icone-192.png',
     badge: 'icone-192.png',
     vibrate: [200, 100, 200],
-    tag: 'clearway-alerte',   // remplace la notif précédente au lieu d'empiler
+    tag: 'clearway-alerte',
   };
 
   evenement.waitUntil(
     (async () => {
-      // Affiche la notification système (fonctionnait déjà)
       await self.registration.showNotification(donnees.titre, options);
 
-      // NOUVEAU : prévient toutes les pages/onglets ouverts de l'app pour
-      // qu'ils ajoutent aussi cette alerte à la liste locale de la cloche.
-      // Sans ça, la notification s'affichait bien sur l'appareil mais
-      // n'était jamais enregistrée dans localStorage (inaccessible depuis
-      // le service worker), donc la cloche ne la voyait jamais.
       const clientsOuverts = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
       clientsOuverts.forEach((client) => {
         client.postMessage({
@@ -187,7 +158,6 @@ self.addEventListener('push', (evenement) => {
   );
 });
 
-// Au clic sur la notification : ouvre (ou remet au premier plan) l'app
 self.addEventListener('notificationclick', (evenement) => {
   evenement.notification.close();
   evenement.waitUntil(

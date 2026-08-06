@@ -1,30 +1,5 @@
 <?php
-// ============================================
-// ClearWay Bénin - API "Vérifier mon trajet"
-//
-// Reçoit un point de départ et un point d'arrivée (lat/lng des deux), et
-// renvoie la liste des signalements actifs ou incertains qui se trouvent
-// à proximité de l'AXE reliant ces deux points (et non plus juste "près de
-// la position actuelle").
-//
-// Algorithme (volontairement simple, sans API de calcul d'itinéraire
-// externe type Google Directions/OSRM) :
-//   1. On projette chaque signalement sur le segment [départ -> arrivée]
-//      en travaillant dans un plan local (approximation équirectangulaire,
-//      largement suffisante à l'échelle d'une ville comme Cotonou).
-//   2. On calcule la distance perpendiculaire entre le signalement et ce
-//      segment : si elle dépasse le "corridor" toléré, on l'ignore.
-//   3. On calcule aussi la position du signalement le long du trajet (0 =
-//      au départ, 1 = à l'arrivée) pour trier les résultats dans l'ordre
-//      où l'utilisateur les rencontrera sur la route.
-//
-// C'est une approximation assumée : elle suit la ligne droite, pas les
-// vraies routes. Mais elle répond déjà à la vraie question posée par
-// l'utilisateur ("qu'est-ce qui est sur mon chemin ?"), contrairement à un
-// simple rayon autour de la position actuelle.
-// ============================================
-
-header("Access-Control-Allow-Origin: https://clearway-phi.vercel.app"); // ⚠️ REMPLACEZ par votre vraie URL Vercel
+header("Access-Control-Allow-Origin: https://clearway-phi.vercel.app");
 header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
 header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE");
 header("Access-Control-Allow-Credentials: true");
@@ -35,22 +10,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 
 header('Content-Type: application/json; charset=utf-8');
 
-// ---- Largeur du corridor autour du trajet, en kilomètres ----
-// Un signalement à moins de CORRIDOR_KM de la ligne droite départ->arrivée
-// est considéré comme "sur le chemin". 600 m de marge absorbe le fait que
-// la vraie route n'est jamais parfaitement rectiligne.
 const CORRIDOR_KM = 0.6;
-
-// Tolérance de dépassement au-delà des extrémités du segment (permet de
-// remonter légèrement avant le départ ou après l'arrivée, ex: un
-// signalement juste avant le point de départ choisi sur la carte)
 const MARGE_EXTREMITES = 0.1; // 10 % de la longueur du trajet de chaque côté
 
 const LIMITE_RESULTATS = 50;
-
-// ============================================
-// 1) VALIDATION DES PARAMÈTRES
-// ============================================
 $parametres = ['lat_depart', 'lng_depart', 'lat_arrivee', 'lng_arrivee'];
 $valeurs = [];
 
@@ -99,13 +62,7 @@ foreach ([$lngDepart, $lngArrivee] as $lng) {
 
 require_once dirname(__DIR__) . '/config/db.php';
 
-// ============================================
-// 2) GÉOMÉTRIE : projection d'un point sur le segment [départ -> arrivée]
-// ============================================
 
-// Convertit un couple (lat, lng) en coordonnées planes locales (km), en
-// prenant le point de départ comme origine. Approximation équirectangulaire :
-// suffisante pour des trajets de quelques dizaines de km maximum.
 function projeterEnPlanLocal(float $lat, float $lng, float $latOrigine, float $lngOrigine, float $kmParDegLat, float $kmParDegLng): array {
     return [
         ($lng - $lngOrigine) * $kmParDegLng,
@@ -113,16 +70,13 @@ function projeterEnPlanLocal(float $lat, float $lng, float $latOrigine, float $l
     ];
 }
 
-// Calcule, pour un point donné, sa distance perpendiculaire au segment
-// [A -> B] (en km) ainsi que sa position relative le long du segment
-// (0 = en A, 1 = en B, négatif ou > 1 = en dehors du segment).
 function distanceEtPositionSurSegment(float $px, float $py, float $ax, float $ay, float $bx, float $by): array {
     $dx = $bx - $ax;
     $dy = $by - $ay;
     $longueurCarree = $dx * $dx + $dy * $dy;
 
     if ($longueurCarree < 0.0001) {
-        // Départ et arrivée quasi identiques : distance directe au point A
+        // Départ et arrivée quasi identiques
         $distance = sqrt(($px - $ax) ** 2 + ($py - $ay) ** 2);
         return [$distance, 0.0];
     }
@@ -137,8 +91,6 @@ function distanceEtPositionSurSegment(float $px, float $py, float $ax, float $ay
 
     return [$distance, $t];
 }
-
-// ---- Repères de conversion degrés -> km, centrés sur le trajet ----
 $latRef = ($latDepart + $latArrivee) / 2;
 $kmParDegLat = 111.32;
 $kmParDegLng = 111.32 * cos(deg2rad($latRef));
@@ -146,14 +98,6 @@ $kmParDegLng = 111.32 * cos(deg2rad($latRef));
 [$ax, $ay] = projeterEnPlanLocal($latDepart, $lngDepart, $latDepart, $lngDepart, $kmParDegLat, $kmParDegLng);
 [$bx, $by] = projeterEnPlanLocal($latArrivee, $lngArrivee, $latDepart, $lngDepart, $kmParDegLat, $kmParDegLng);
 
-// ============================================
-// 3) RÉCUPÉRATION DES SIGNALEMENTS CANDIDATS
-//
-// On ne peut pas exprimer "distance à un segment" directement en SQL de
-// façon simple, donc on limite d'abord grossièrement en SQL (boîte
-// englobante autour du trajet, avec marge) puis on affine précisément en
-// PHP. Ça évite de charger toute la table à chaque appel.
-// ============================================
 $latMin = min($latDepart, $latArrivee) - 0.05; // ~5 km de marge
 $latMax = max($latDepart, $latArrivee) + 0.05;
 $lngMin = min($lngDepart, $lngArrivee) - 0.05;
@@ -205,11 +149,6 @@ function libelleZone($s) {
     return 'Position (' . round((float) $s['latitude'], 4) . ', ' . round((float) $s['longitude'], 4) . ')';
 }
 
-// Même règle de confiance que le reste de l'app (cf. voies.php / confirmation.php) :
-// - "validee" : seuil de 3 confirmations distinctes atteint, ne s'archive plus jamais
-// - "confirmee_partiellement" : au moins une confirmation, en cours de consolidation
-// - "incertain" : aucune confirmation depuis un moment, fiabilité à prendre avec réserve
-// - "recente" : signalement frais, pas encore eu le temps d'être confirmé
 function confianceSignalement(array $s): string {
     if ((bool) $s['valide']) return 'validee';
     if ((int) $s['nb_confirmations'] > 0) return 'confirmee_partiellement';
@@ -217,9 +156,6 @@ function confianceSignalement(array $s): string {
     return 'recente';
 }
 
-// ============================================
-// 4) FILTRAGE GÉOMÉTRIQUE PRÉCIS + TRI DANS L'ORDRE DU TRAJET
-// ============================================
 $resultats = [];
 
 foreach ($candidats as $s) {
@@ -246,7 +182,6 @@ foreach ($candidats as $s) {
     ];
 }
 
-// Tri dans l'ordre où l'utilisateur croisera chaque signalement sur son trajet
 usort($resultats, fn($a, $b) => $a['position_pourcentage'] <=> $b['position_pourcentage']);
 
 $resultats = array_slice($resultats, 0, LIMITE_RESULTATS);

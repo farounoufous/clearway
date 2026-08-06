@@ -1,18 +1,16 @@
 <?php
 
-// Lignes temporaires pour afficher l'erreur en clair sur l'écran
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-// (Le reste de vos en-têtes CORS et require_once db.php reste inchangé...)
 
-header("Access-Control-Allow-Origin: https://clearway-phi.vercel.app"); // ⚠️ REMPLACEZ par votre vraie URL Vercel
+header("Access-Control-Allow-Origin: https://clearway-phi.vercel.app");
 header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
 header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE");
 header("Access-Control-Allow-Credentials: true");
 
-// Si c'est une requête de pré-vérification (OPTIONS), on arrête le script immédiatement
+// Si c'est une requête de pré-vérification, on arrête le script immédiatement
 if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     exit(0);
 }
