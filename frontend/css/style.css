@@ -1,3 +1,14 @@
+
+/* ============================================
+   ClearWay Bénin - Style global
+   ============================================ */
+
+/* Police d'accroche pour les titres uniquement (Sora) : plus de caractère
+   qu'une police système pour les titres, sans alourdir le corps de texte
+   (qui reste en police système, plus rapide et plus lisible sur mobile).
+   Direction retenue : institutionnelle/rassurante avec une touche chaleureuse -
+   Sora a des formes géométriques mais légèrement arrondies, confiantes sans
+   être froides. */
 @import url('https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&display=swap');
 
 :root {
@@ -15,6 +26,10 @@
   --noir-texte: #1a1a1a;
   --rayon: 0;
   --police-titres: 'Sora', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+
+  /* Profondeur : une seule échelle d'ombre réutilisée partout (cartes,
+     survols), pour que "ce qui est cliquable" se détache de façon cohérente
+     d'un écran à l'autre plutôt que d'avoir des traitements disparates. */
   --ombre-carte: 0 1px 3px rgba(15, 52, 96, 0.07), 0 1px 2px rgba(15, 52, 96, 0.04);
   --ombre-carte-hover: 0 6px 16px rgba(15, 52, 96, 0.12);
 }
@@ -43,6 +58,7 @@ h1, h2, h3,
   gap: 8px;
 }
 
+/* Conteneur mobile-first : simule le cadre "téléphone" de la maquette */
 .ecran {
   max-width: 420px;
   margin: 0 auto;
@@ -50,8 +66,11 @@ h1, h2, h3,
   background: var(--blanc);
   display: flex;
   flex-direction: column;
-  position: relative;
+  position: relative; /* ancre .panneau-notifications même en mode carte flottante (tablette/desktop) */
 }
+
+/* Header : dégradé discret (au lieu d'un aplat uni) pour une sensation de
+   profondeur institutionnelle plutôt qu'un simple bandeau plat */
 .header {
   background: var(--bleu-fonce);
   color: var(--blanc);
@@ -68,8 +87,14 @@ h1, h2, h3,
 
 .contenu { padding: 20px; flex: 1; display: flex; flex-direction: column; }
 
+/* Pousse les boutons d'action tout en bas de l'écran plutôt que de laisser
+   un grand vide sous le contenu quand la liste est courte */
 .contenu > .btn:first-of-type { margin-top: auto; }
-/* Ecran 1 */
+
+/* ============================================
+   Écran 01 - Accueil
+   ============================================ */
+
 .stats { display: flex; gap: 12px; margin-bottom: 24px; }
 
 .stat-carte {
@@ -108,6 +133,8 @@ h1, h2, h3,
   margin-bottom: 12px;
 }
 
+/* Petit repère visuel avant chaque titre de section, pour casser l'effet
+   "simple étiquette grise" et ancrer une identité graphique récurrente */
 .section-derniers {
   margin-bottom: 24px;
 }
@@ -184,6 +211,10 @@ h1, h2, h3,
   right: 14px;
   margin-left: 0;
 }
+
+/* ============================================
+   Boutons (communs à tous les écrans)
+   ============================================ */
 
 .btn {
   display: block;
@@ -264,6 +295,10 @@ h1, h2, h3,
 
 .lien-discret:hover { color: var(--bleu-fonce); }
 
+/* ============================================
+   Écran 02 - Formulaire de signalement
+   ============================================ */
+
 .champ { margin-bottom: 18px; }
 
 .lien-geoloc {
@@ -330,6 +365,8 @@ h1, h2, h3,
   transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
+/* Code couleur universel et progressif : vert (léger) -> orange (modéré) -> rouge (sévère),
+   visible dès le survol/repos pour une compréhension immédiate du niveau de danger */
 .selecteur-gravite button[data-valeur="Leger"] { border-bottom-color: var(--vert); }
 .selecteur-gravite button[data-valeur="Modere"] { border-bottom-color: var(--orange); }
 .selecteur-gravite button[data-valeur="Severe"] { border-bottom-color: var(--rouge); }
@@ -364,6 +401,7 @@ h1, h2, h3,
 .message-etat.erreur { background: #fdecea; color: var(--rouge); }
 .message-etat.info { background: var(--gris-fond); color: var(--gris-texte); }
 
+/* Icônes SVG inline (remplacent les emojis partout dans l'app) */
 .icone-inline {
   display: inline-block;
   vertical-align: -3px;
@@ -381,6 +419,7 @@ h1, h2, h3,
   margin-bottom: 14px;
 }
 
+/* Bloc de confirmation "zone détectée" (remplace le select une fois la position trouvée) */
 .zone-detectee {
   display: flex;
   align-items: center;
@@ -409,6 +448,8 @@ h1, h2, h3,
   flex-shrink: 0;
   white-space: nowrap;
 }
+
+/* Aperçu de la photo choisie dans le formulaire, et affichage sur écrans 03/04 */
 #apercu-photo img,
 .photo-signalement {
   width: 100%;
@@ -418,6 +459,10 @@ h1, h2, h3,
   margin-top: 10px;
   display: block;
 }
+
+/* ============================================
+   Écran 03 - Liste des voies bloquées
+   ============================================ */
 
 .carte-voie {
   display: block;
@@ -463,6 +508,7 @@ h1, h2, h3,
   border-color: var(--bleu-fonce);
 }
 
+/* Badge "Nouveau" (écrans 01 et 03) */
 .badge-nouveau {
   display: inline-block;
   background: var(--bleu-fonce);
@@ -475,6 +521,8 @@ h1, h2, h3,
   vertical-align: middle;
 }
 
+/* Badge "Récemment dégagée" : le seuil de 3 confirmations est atteint,
+   mais la carte reste dans la liste jusqu'au clic de confirmation finale */
 .badge-degagee {
   display: inline-block;
   background: var(--vert);
@@ -487,6 +535,7 @@ h1, h2, h3,
   vertical-align: middle;
 }
 
+/* Badges de statut (écran "Mes signalements") */
 .badge-statut {
   display: inline-block;
   font-size: 0.7rem;
@@ -499,6 +548,10 @@ h1, h2, h3,
 
 .badge-statut.badge-actif { background: var(--vert-clair); color: var(--vert); }
 .badge-statut.badge-archive { background: var(--gris-fond); color: var(--gris-texte); }
+
+/* ============================================
+   Écran 04 - Confirmation collaborative
+   ============================================ */
 
 .boite-confirmation {
   background: #eaf1fb;
@@ -524,6 +577,10 @@ h1, h2, h3,
   color: var(--gris-texte);
   margin-top: 12px;
 }
+
+/* ============================================
+   Cloche de notification + modal (Écran 05)
+   ============================================ */
 
 .header-accueil {
   position: relative;
@@ -554,6 +611,10 @@ h1, h2, h3,
 }
 
 .btn-cloche:active { transform: scale(0.94); }
+
+/* L'état "notifications actives" est signalé uniquement par le point vert
+   discret (.point-actif) - pas besoin d'un second indicateur sur le bouton
+   lui-même, ça évite un effet racoleur pour une simple case "activé". */
 
 .point-actif {
   position: absolute;
@@ -590,6 +651,7 @@ h1, h2, h3,
   display: none;
 }
 
+/* Panneau déroulant de notifications */
 .panneau-notifications {
   position: absolute;
   top: 66px;
@@ -748,6 +810,10 @@ h1, h2, h3,
 .modal-notif .btn { margin-bottom: 10px; }
 .modal-notif .btn:last-child { margin-bottom: 0; }
 
+/* ============================================
+   Barre de progression "voie dégagée" (3 confirmations)
+   ============================================ */
+
 .progression-degagee { margin-bottom: 16px; }
 
 .progression-degagee-en-tete {
@@ -796,11 +862,16 @@ h1, h2, h3,
   margin-bottom: 16px;
 }
 
+/* Boutons visuellement désactivés mais qui interceptent quand même le clic
+   (propriétaire du signalement) : volontairement PAS d'attribut disabled */
 .btn.verrouille {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
+/* Bouton "Voir sur Maps" sur les cartes de voies/mes-signalements (un <button>,
+   pas un <a>, car la carte entière est déjà un lien : imbriquer un <a> dedans
+   serait invalide en HTML) */
 .btn-voir-maps {
   display: inline-block;
   margin-top: 8px;
@@ -816,6 +887,7 @@ h1, h2, h3,
 
 .btn-voir-maps:hover { background: var(--bleu-clair); }
 
+/* Lien Maps sur la page de détail (confirmation.html) */
 .lien-maps-confirmation {
   display: inline-block;
   margin-top: 8px;
@@ -824,6 +896,7 @@ h1, h2, h3,
   color: var(--bleu-fonce);
   text-decoration: underline;
 }
+/* Mini barre de progression sur les cartes de la liste des voies */
 .mini-progression { margin-top: 8px; }
 
 .mini-progression-piste {
@@ -840,6 +913,12 @@ h1, h2, h3,
   border-radius: 0;
 }
 
+/* ============================================
+   Responsive : tablette / desktop
+   Le mobile reste inchangé (design d'origine, <601px).
+   Au-delà, on présente l'écran comme une carte flottante centrée
+   au lieu d'un rectangle blanc collé aux bords de la fenêtre.
+   ============================================ */
 @media (min-width: 601px) {
   body {
     min-height: 100vh;
@@ -867,6 +946,15 @@ h1, h2, h3,
     margin-top: 12px;
   }
 }
+
+/* ============================================
+   Mode sombre — désormais uniquement sur choix explicite de l'utilisateur
+   (bouton du menu, data-theme="dark" posé sur <html> par js/theme.js).
+   Le mode clair est le mode par défaut, quel que soit le réglage système.
+   ============================================ */
+
+/* ---- Forçage explicite (bouton "Mode sombre" du menu) : prime toujours,
+   quel que soit le réglage système, grâce au sélecteur d'attribut ---- */
 :root[data-theme="dark"] {
   --bleu-fonce: #4f83c9;
   --bleu-fonce-hover: #6b9bdb;
@@ -906,6 +994,7 @@ h1, h2, h3,
 :root[data-theme="light"] .stat-carte.rouge { background: #fdecea; }
 :root[data-theme="light"] img.photo-signalement { opacity: 1; }
 
+/* ---- Bouton "Mode sombre" dans le menu ---- */
 .panneau-menu-toggle {
   display: flex;
   align-items: center;
@@ -953,12 +1042,13 @@ h1, h2, h3,
 .panneau-menu-toggle[aria-pressed="true"] .interrupteur { background: var(--bleu-fonce); }
 .panneau-menu-toggle[aria-pressed="true"] .interrupteur::after { transform: translateX(16px); }
 
-/* Menu hamburger */
+/* Menu hamburger (repositionne le bouton cloche générique à gauche) */
 .btn-menu {
   left: 20px;
   right: auto;
 }
 
+/* Groupe logo + titre, sous la rangée des boutons (cloche/menu) */
 .header-titre-groupe {
   display: flex;
   align-items: center;
@@ -971,6 +1061,10 @@ h1, h2, h3,
   height: auto;
   flex-shrink: 0;
 }
+
+/* ============================================
+   Page "Récemment dégagé"
+   ============================================ */
 
 .sous-titre-page {
   font-size: 0.85rem;
@@ -993,6 +1087,10 @@ h1, h2, h3,
 .carte-degage-icone { color: var(--vert); flex-shrink: 0; }
 .carte-degage-zone { font-weight: 700; margin-bottom: 3px; }
 .carte-degage-details { font-size: 0.82rem; color: var(--gris-texte); }
+
+/* ============================================
+   Carte schématique des zones
+   ============================================ */
 
 .carte-schematique {
   width: 100%;
@@ -1056,7 +1154,9 @@ h1, h2, h3,
   gap: 6px;
 }
 
+/* ============================================
    Menu hamburger latéral
+   ============================================ */
 
 .panneau-menu {
   position: absolute;
@@ -1107,6 +1207,10 @@ h1, h2, h3,
 .panneau-menu-item:hover { background: var(--gris-fond); }
 .panneau-menu-item .icone-menu { display: inline-flex; color: var(--gris-texte); }
 
+/* ============================================
+   Squelettes de chargement (skeleton)
+   ============================================ */
+
 .squelette-carte {
   height: 76px;
   border-radius: 0;
@@ -1134,6 +1238,10 @@ h1, h2, h3,
   font-style: italic;
 }
 
+/* ============================================
+   Écran 02 - Emplacement (GPS / carte), sans sélecteur de zone
+   ============================================ */
+
 .boutons-position {
   display: flex;
   gap: 8px;
@@ -1145,6 +1253,7 @@ h1, h2, h3,
   padding: 10px 8px;
 }
 
+/* ---- Modale "Choisir sur la carte" ---- */
 .modal-carte {
   background: var(--blanc);
   border-radius: var(--rayon);
@@ -1218,19 +1327,31 @@ h1, h2, h3,
   overflow: hidden;
   border: 1px solid var(--gris-bordure);
 }
+
+/* Le pied de la modale garde le bouton de confirmation toujours visible,
+   même si la liste de résultats de recherche pousse le reste vers le bas */
 .modal-carte .btn-principal { flex-shrink: 0; }
 
+/* ============================================
+   Écran "Carte des zones" (Leaflet + clustering)
+   ============================================ */
+
+/* La carte remplit tout l'espace vertical disponible sous le header (au lieu
+   d'un ratio fixe type "4/5") : elle s'adapte donc naturellement à la hauteur
+   réelle de l'écran, à la barre d'adresse mobile qui se rétracte, et au mode
+   "carte flottante" du desktop. Le conteneur est en position:relative pour
+   ancrer le bouton flottant de géolocalisation. */
 .ecran-carte {
   overflow: hidden;
   height: 100vh;
-  height: 100dvh;
+  height: 100dvh; /* tient compte des barres d'adresse mobiles rétractables */
 }
 
 .carte-conteneur {
   position: relative;
   width: 100%;
   flex: 1 1 auto;
-  min-height: 0; 
+  min-height: 0; /* évite le bug flexbox où un enfant refuse de rétrécir sous sa taille de contenu */
   background: var(--gris-fond);
 }
 
@@ -1239,6 +1360,7 @@ h1, h2, h3,
   height: 100%;
 }
 
+/* Bande basse : légende des couleurs, hauteur naturelle (ne grandit pas) */
 .carte-legende {
   display: flex;
   align-items: center;
@@ -1271,6 +1393,7 @@ h1, h2, h3,
 .pastille-legende.pastille-orange { background: var(--orange); }
 .pastille-legende.pastille-vert { background: var(--vert); }
 
+/* ---- Bouton flottant de géolocalisation ---- */
 .btn-localiser {
   position: absolute;
   bottom: 18px;
@@ -1299,6 +1422,7 @@ h1, h2, h3,
   to { transform: rotate(360deg); }
 }
 
+/* ---- Marqueurs personnalisés (pins SVG rouge/orange/vert) ---- */
 .marqueur-pin {
   background: transparent;
   border: none;
@@ -1309,6 +1433,7 @@ h1, h2, h3,
 .marqueur-pin-orange { color: var(--orange); }
 .marqueur-pin-vert { color: var(--vert); }
 
+/* ---- Marqueur de position utilisateur (point bleu pulsant) ---- */
 .marqueur-position {
   background: transparent;
   border: none;
@@ -1344,6 +1469,7 @@ h1, h2, h3,
   100% { transform: scale(3.2); opacity: 0; }
 }
 
+/* ---- Contenu des pop-ups Leaflet (surcharge du style par défaut du plugin) ---- */
 .leaflet-popup-content-wrapper {
   border-radius: 0;
   padding: 2px;
@@ -1391,6 +1517,8 @@ h1, h2, h3,
 
 .btn-popup-secondaire:disabled { opacity: 0.6; cursor: not-allowed; }
 
+/* ---- Cluster : reprend le bleu foncé de l'app plutôt que le jaune par
+   défaut du plugin, pour rester cohérent avec le reste de l'UI ---- */
 .marker-cluster-small,
 .marker-cluster-medium,
 .marker-cluster-large {
@@ -1405,6 +1533,9 @@ h1, h2, h3,
   font-weight: 700;
 }
 
+/* ---- Adaptation tablette / desktop : la carte profite de la largeur
+   disponible au lieu de rester bridée à 420px, et garde une hauteur
+   généreuse basée sur le viewport réel plutôt qu'une valeur fixe ---- */
 @media (min-width: 601px) {
   .ecran-carte {
     max-width: 640px;
@@ -1420,6 +1551,11 @@ h1, h2, h3,
     height: 82dvh;
   }
 }
+/* ============================================
+   Badge "Non confirmé" (statut incertain)
+   Cf. backend/api/voies.php : un signalement sans confirmation depuis
+   90 min passe en 'incertain' au lieu de disparaître d'un coup.
+   ============================================ */
 .badge-incertain {
   display: inline-block;
   background: var(--orange);
@@ -1454,6 +1590,9 @@ h1, h2, h3,
   margin-top: 6px;
 }
 
+/* ============================================
+   Page "Vérifier mon trajet"
+   ============================================ */
 .itineraire-formulaire {
   padding: 16px 20px;
   display: flex;
@@ -1542,6 +1681,11 @@ h1, h2, h3,
   vertical-align: middle;
 }
 
+/* ============================================
+   Bouton "Signaler comme erroné" (cf. confirmation.js)
+   Réutilise .lien-discret mais sur un <button>, donc on réinitialise
+   l'apparence native du bouton pour qu'il ressemble à un lien texte.
+   ============================================ */
 .lien-signaler-errone {
   width: 100%;
   background: none;
@@ -1556,6 +1700,11 @@ h1, h2, h3,
   color: var(--vert);
 }
 
+/* ============================================
+   Modale de confirmation/alerte générique (cf. frontend/js/modal.js)
+   Remplace les confirm()/alert() natifs du navigateur par une vraie carte
+   stylisée sur fond flouté, cohérente avec .modal-carte / .modal-notif.
+   ============================================ */
 .modal-confirmation-action {
   background: var(--blanc);
   border-radius: var(--rayon);
@@ -1588,6 +1737,11 @@ h1, h2, h3,
   margin-bottom: 0;
 }
 
+/* ============================================
+   Bouton "Signaler une voie bloquée" de l'accueil : fond bleu plein,
+   devient rouge au survol (variante spécifique à ce bouton uniquement,
+   .btn-secondaire garde son style habituel partout ailleurs).
+   ============================================ */
 .btn-signaler-accueil {
   background: var(--bleu-fonce);
   color: var(--blanc);
